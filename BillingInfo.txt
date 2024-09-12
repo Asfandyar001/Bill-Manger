@@ -1,0 +1,1 @@
+cust_id,billing month,current meter reading,peak meter reading,reading entry date,cost of electricity,sales tax amount,fixed charges,total biling amount,due date,bill paid status,bill payment date
