@@ -1,6 +1,7 @@
 import java.io.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 public class Customer
@@ -165,6 +166,40 @@ public class Customer
         }
 
         return false;
+    }
+
+    public void viewExpireCnic()
+    {
+        LocalDate today = LocalDate.now();
+        LocalDate expiry;
+        long daysInBetween;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        ArrayList<String> list = new ArrayList<>();
+
+        String line;
+        String[] data;
+        try(BufferedReader br = new BufferedReader(new FileReader("NADRADBfile.txt"))){
+            while((line=br.readLine())!=null){
+                data = line.split(",");
+                expiry = LocalDate.parse(data[2],formatter);
+
+                daysInBetween = ChronoUnit.DAYS.between(today,expiry);
+                if(daysInBetween<=30 && daysInBetween>0)
+                {
+                    list.add(data[0]+"          "+data[2]);
+                }
+            }
+        }catch(IOException e){
+            System.out.println("Error: " + e.getMessage());
+        }
+
+        System.out.println("\nTotal CNIC's Expiring in 30 Days: " + list.size() + "\n");
+        System.out.println("    CNIC\t\t\t   Expiry Date");
+        for(int i=0;i<list.size();i++)
+        {
+            System.out.println(list.get(i));
+        }
     }
 
     public int cnic_count(String cnic)

@@ -7,6 +7,7 @@ public class Main
     {
         Billing b = new Billing();
         TaxManager t = new TaxManager();
+        Customer c = new Customer();
         t.addTaxFile();
 
         Scanner scanner = new Scanner(System.in);
@@ -16,7 +17,7 @@ public class Main
         while(true)
         {
             System.out.println("\n\n\t\t\tEmployee Menu\n");
-            System.out.print("1) Update Password\n2) Add Customer\n3) Add Bill\n4) Update Bill Paid Status\n5) Change Taxes\n6) View Bill\n7) Go Back\n\nChoice: ");
+            System.out.print("1) Update Password\n2) Add Customer\n3) Add Bill\n4) Update Bill Paid Status\n5) Change Taxes\n6) View Bill\n7) View Paid/UnPaid Report\n8) View Expiring CNIC's\n9) Go Back\n\nChoice: ");
             input = scanner.nextLine();
 
             if(input.equals("1"))
@@ -29,7 +30,6 @@ public class Main
             }
             else if(input.equals("2"))
             {
-                Customer c = new Customer();
                 System.out.println("\nGo Back -> 00\n");
                 if(c.addCustomer())
                 {
@@ -44,7 +44,7 @@ public class Main
                     System.out.println("\nBill Added Successfully!");
                 }
             }
-            else if(input.equals("4"))
+            else if(input.equals("4")) // get input of month and reading entry date as well to chnage status
             {
                 System.out.println("\nGo Back -> 00\n");
                 if(b.changePaidStatus())
@@ -57,12 +57,20 @@ public class Main
                 System.out.println("\nGo Back -> 00\n");
                 t.updateTaxMenu();
             }
-            else if(input.equals("6"))
+            else if(input.equals("6")) // get input of month and reading entry date as well to view bill
             {
                 System.out.println("\nGo Back -> 00\n");
                 b.viewBill();
             }
             else if(input.equals("7"))
+            {
+                b.viewReport();
+            }
+            else if(input.equals("8"))
+            {
+                c.viewExpireCnic();
+            }
+            else if(input.equals("9"))
             {
                 break;
             }

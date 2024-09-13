@@ -129,6 +129,44 @@ public class Billing
     {
         Scanner scanner = new Scanner(System.in);
         String custID;
+        String billingMonth;
+
+        while(true)
+        {
+            System.out.print("Enter Billing Month: ");
+            billingMonth = scanner.nextLine();
+
+            if(billingMonth.equals("00"))
+            {
+                return false;
+            }
+            if(billingMonth.equals("Jan") || billingMonth.equals("Feb") || billingMonth.equals("Mar") || billingMonth.equals("April") || billingMonth.equals("May") || billingMonth.equals("June") || billingMonth.equals("July") || billingMonth.equals("August") || billingMonth.equals("Sept") || billingMonth.equals("Oct") || billingMonth.equals("Nov") || billingMonth.equals("Dec"))
+            {
+                break;
+            }
+            System.out.println("Incorrect Month: Try Again");
+        }
+
+        String entryDate;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        while(true)
+        {
+            System.out.print("Enter Bill Paid Date (dd/MM/yyyy): ");
+            entryDate = scanner.nextLine();
+            if(entryDate.equals("00"))
+            {
+                return false;
+            }
+            try{
+                LocalDate date = LocalDate.parse(entryDate,formatter);
+                break;
+            }catch(DateTimeParseException e)
+            {
+                System.out.println("Invalid Date : Try Again");
+            }
+        }
+
         while(true)
         {
             System.out.print("Enter Customer ID: ");
@@ -151,20 +189,28 @@ public class Billing
 
         String line;
         String[] data;
+        boolean found = false;
         try(BufferedReader br = new BufferedReader(new FileReader(billFilename))){
             while((line = br.readLine())!=null)
             {
                 data = line.split(",");
-                if(data[0].equals(custID))
+                if(data[0].equals(custID) && data[1].equals(billingMonth) && data[4].equals(entryDate))
                 {
                     readingEntryDate = data[4];
                     RUC = data[2];
                     PHUC = data[3];
                     status=data[10];
+                    found = true;
                 }
             }
         }catch (IOException e){
             System.out.println("Error Reading File: " + e.getMessage());
+        }
+
+        if(!found)
+        {
+            System.out.println("No Such Bill Found");
+            return false;
         }
 
         if(status.equals("Paid"))
@@ -174,7 +220,6 @@ public class Billing
         }
 
         String paymentDate="";
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         LocalDate readingDate = LocalDate.parse(readingEntryDate,formatter);
         boolean valid = false;
         while(!valid)
@@ -209,7 +254,7 @@ public class Billing
 
             while ((line2 = br.readLine()) != null) {
                 String[] getLine = line2.split(",");
-                if (getLine[0].equals(custID)) {
+                if (getLine[0].equals(custID) && getLine[1].equals(billingMonth) && getLine[4].equals(entryDate)) {
                     getLine[11] = paymentDate;
                     array.add(getLine[0] + "," + getLine[1] + "," + getLine[2] + "," + getLine[3] + "," + getLine[4] + "," + getLine[5] + "," + getLine[6] + "," + getLine[7] + "," + getLine[8] + "," + getLine[9] + "," + "Paid" + "," + getLine[11]);
                 } else {
@@ -348,7 +393,7 @@ public class Billing
         return false;
     }
 
-    public boolean validateCustomerIDfromBillFile(String id)
+    public boolean validateCustomerIDfromBillFile(String id,String month,String date)
     {
         try {
             FileReader fr = new FileReader(billFilename);
@@ -357,7 +402,7 @@ public class Billing
             String line;
             while ((line = br.readLine()) != null) {
                 String[] index = line.split(",");
-                if (index[0].equals(id)) {
+                if (index[0].equals(id) && index[1].equals(month) && index[4].equals(date)) {
                     for(int i=0; i<index.length; i++)
                     {
                         billList.add(index[i]);
@@ -378,6 +423,43 @@ public class Billing
     {
         Scanner scanner = new Scanner(System.in);
         String custID;
+        String billingMonth;
+        while(true)
+        {
+            System.out.print("Enter Billing Month: ");
+            billingMonth = scanner.nextLine();
+
+            if(billingMonth.equals("00"))
+            {
+                return false;
+            }
+            if(billingMonth.equals("Jan") || billingMonth.equals("Feb") || billingMonth.equals("Mar") || billingMonth.equals("April") || billingMonth.equals("May") || billingMonth.equals("June") || billingMonth.equals("July") || billingMonth.equals("August") || billingMonth.equals("Sept") || billingMonth.equals("Oct") || billingMonth.equals("Nov") || billingMonth.equals("Dec"))
+            {
+                break;
+            }
+            System.out.println("Incorrect Month: Try Again");
+        }
+
+        String entryDate;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        while(true)
+        {
+            System.out.print("Enter Bill Paid Date (dd/MM/yyyy): ");
+            entryDate = scanner.nextLine();
+            if(entryDate.equals("00"))
+            {
+                return false;
+            }
+            try{
+                LocalDate date = LocalDate.parse(entryDate,formatter);
+                break;
+            }catch(DateTimeParseException e)
+            {
+                System.out.println("Invalid Date : Try Again");
+            }
+        }
+
         while(true)
         {
             System.out.print("Enter Customer ID: ");
@@ -387,11 +469,11 @@ public class Billing
             {
                 return false;
             }
-            if(validateCustomerIDfromBillFile(custID))
+            if(validateCustomerIDfromBillFile(custID,billingMonth,entryDate))
             {
                 break;
             }
-            System.out.println("Customer ID Invalid: Try Again");
+            System.out.println("No Such Bill Found: Try Again");
         }
 
         System.out.println("\n--------------------------------------------------\n\t\t\t  LESCO Billing Data\n--------------------------------------------------\n\n" +
@@ -408,6 +490,34 @@ public class Billing
                 "Bill Paid Status:            "+billList.get(10)+"\n"+
                 "Bill Payment Date:           "+billList.get(11)+"\n");
         return true;
+    }
+
+    public void viewReport()
+    {
+        float sum_paid=0;
+        float sum_unpaid=0;
+        String line;
+        String[] data;
+
+        try(BufferedReader br = new BufferedReader(new FileReader(billFilename)))
+        {
+            while ((line=br.readLine())!=null)
+            {
+                data=line.split(",");
+                if(data[10].equals("Paid"))
+                {
+                    sum_paid = sum_paid + Float.parseFloat(data[8]);
+                }
+                else if(data[10].equals("UnPaid"))
+                {
+                    sum_unpaid = sum_unpaid + Float.parseFloat(data[8]);
+                }
+            }
+        }catch (IOException e){
+            System.out.println("Error: " + e.getMessage());
+        }
+
+        System.out.println("\n------------------------------\n\t    Status Report\n------------------------------\nAmount Paid So Far: " + sum_paid + "\nAmount Unpaid So Far: " + sum_unpaid);
     }
 
     public boolean isDigits(String str)
