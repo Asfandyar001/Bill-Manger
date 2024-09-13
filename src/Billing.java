@@ -101,6 +101,30 @@ public class Billing
             }
         }
 
+        String line;
+        String[] data;
+        LocalDate now = LocalDate.parse(readingEntryDate,formatter);
+        int current_year = now.getYear();
+
+        try(BufferedReader br = new BufferedReader(new FileReader(billFilename)))
+        {
+            while((line=br.readLine())!=null)
+            {
+                data = line.split(",");
+                if(data[0].equals(custID) && data[1].equals(billingMonth))
+                {
+                    LocalDate fileDate = LocalDate.parse(data[4],formatter);
+                    int billYear = fileDate.getYear();
+                    if(billYear == current_year) {
+                        System.out.println("\nThe Bill For the Month Issued Already");
+                        return false;
+                    }
+                }
+            }
+        }catch(IOException e){
+            System.out.println("Error: " + e.getMessage());
+        }
+
         String[] tax = getTaxData(arrayList.get(5), arrayList.get(6));
 
         float costOfElectricity = 0;
@@ -152,7 +176,7 @@ public class Billing
 
         while(true)
         {
-            System.out.print("Enter Bill Paid Date (dd/MM/yyyy): ");
+            System.out.print("Enter Bill Entry Date (dd/MM/yyyy): ");
             entryDate = scanner.nextLine();
             if(entryDate.equals("00"))
             {
@@ -445,7 +469,7 @@ public class Billing
 
         while(true)
         {
-            System.out.print("Enter Bill Paid Date (dd/MM/yyyy): ");
+            System.out.print("Enter Bill Entry Date (dd/MM/yyyy): ");
             entryDate = scanner.nextLine();
             if(entryDate.equals("00"))
             {

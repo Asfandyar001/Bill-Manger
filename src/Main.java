@@ -2,6 +2,38 @@ import java.util.*;
 
 public class Main
 {
+    public static void CustOptionMenu(){
+        Customer c = new Customer();
+        Scanner scanner = new Scanner(System.in);
+        String input;
+
+        while(true)
+        {
+            System.out.println("\n\n\t\t\tCustomer Menu\n");
+            System.out.print("1) View Bill\n2) Update CNIC Expiry Date\n3) Go Back\n\nChoice: ");
+            input = scanner.nextLine();
+
+            if(input.equals("1"))
+            {
+                c.CustInMenu();
+            }
+            else if(input.equals("2"))
+            {
+                System.out.println("\nGo Back -> 00\n");
+                if(c.updateCNIC())
+                {
+                    System.out.println("CNIC Updated Successfully!");
+                }
+            }
+            else if(input.equals("3"))
+            {
+                break;
+            }
+            else{
+                System.out.println("Incorrect Choice: Try Again");
+            }
+        }
+    }
 
     public static void EmpOptionMenu(Employees e,String name, String pass)
     {
@@ -121,7 +153,7 @@ public class Main
 
         while(true)
         {
-            System.out.print("1) Employee LogIn\n2) LogIn Customer\n3) Exit\n\nChoice: ");
+            System.out.print("\n\n--------------------\n\t\tMENU\n--------------------\n1) Employee LogIn\n2) Customer Page\n3) Exit\n\nChoice: ");
             input = scanner.nextLine();
 
             if (input.equals("1"))
@@ -130,7 +162,7 @@ public class Main
             }
             else if (input.equals("2"))
             {
-
+                CustOptionMenu();
             }
             else if (input.equals("3"))
             {

@@ -1,3 +1,0 @@
-cust_id,billing month,current meter reading,peak meter reading,reading entry date,cost of electricity,sales tax amount,fixed charges,total biling amount,due date,bill paid status,bill payment date
-2135,Jan,200,not_supported,13/09/2024,0.0,0.0,150.0,150.0,20/09/2024,UnPaid,Not Paid
-2135,Feb,500,not_supported,13/09/2024,1500.0,255.0,150.0,1905.0,20/09/2024,Paid,14/09/2024

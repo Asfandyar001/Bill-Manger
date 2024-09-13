@@ -1,12 +1,94 @@
 import java.io.*;
+import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 public class Customer
 {
-    private String filename = "CustomerInfo.txt";
+    private String custFilename = "CustomerInfo.txt";
+    private String billFilename = "BillingInfo.txt";
+    private String tariffFilename = "TariffTaxInfo.txt";
+    private String[] custInfo;
+    private String[] billInfo;
+    private String[] tariffInfo;
+    private String[] nadraInfo;
+
+    public void CustInMenu(){
+        Scanner scanner = new Scanner(System.in);
+        String id;
+        String cnic;
+        String month;
+        String year;
+        int intYear=0;
+
+        Customer c = new Customer();
+
+        while(true) {
+            System.out.println("\nGo Back -> 00\n");
+            System.out.print("Enter ID: ");
+            id = scanner.nextLine();
+
+            if(id.equals("00"))
+            {
+                break;
+            }
+
+            System.out.print("Enter CNIC: ");
+            cnic = scanner.nextLine();
+
+            if(cnic.equals("00"))
+            {
+                break;
+            }
+
+            while(true)
+            {
+                System.out.print("Enter Bill Month: ");
+                month = scanner.nextLine();
+
+                if(month.equals("00"))
+                {
+                    break;
+                }
+                if(month.equals("Jan") || month.equals("Feb") || month.equals("Mar") || month.equals("April") || month.equals("May") || month.equals("June") || month.equals("July") || month.equals("August") || month.equals("Sept") || month.equals("Oct") || month.equals("Nov") || month.equals("Dec"))
+                {
+                    break;
+                }
+                System.out.println("Incorrect Month: Try Again");
+            }
+            if(month.equals("00"))
+            {
+                break;
+            }
+
+            while(true) {
+                System.out.print("Enter Year: ");
+                year = scanner.nextLine();
+
+                if (year.equals("00")) {
+                    break;
+                }
+                if(year.matches("\\d{4}") && Integer.parseInt(year) > 0)
+                {
+                    intYear = Integer.parseInt(year);
+                    break;
+                }
+                System.out.println("Invalid Year Try Again");
+            }
+            if (year.equals("00")) {
+                break;
+            }
+
+            if (validateCustomer(id, cnic,month,intYear)) {
+                viewBill();
+            } else {
+                System.out.print("\n\nIncorrect ID or CNIC");
+            }
+        }
+    }
 
     public boolean addCustomer()
     {
@@ -131,7 +213,7 @@ public class Customer
         }
 
         String data = id + "," + cnic + "," + name + "," + address + "," + phone + "," + custType + "," + meterType + "," + date + "," + RUC + "," + PHUC;
-        try(BufferedWriter bw = new BufferedWriter(new FileWriter(filename,true))) {
+        try(BufferedWriter bw = new BufferedWriter(new FileWriter(custFilename,true))) {
             bw.write(data);
             bw.newLine();
         }
@@ -142,10 +224,11 @@ public class Customer
         return true;
     }
 
-    public boolean validateCustomer(String id, String cnic)
+    public boolean validateCustomer(String id, String cnic, String month, int year)
     {
+        boolean valid = false;
         try {
-            FileReader fr = new FileReader(filename);
+            FileReader fr = new FileReader(custFilename);
             BufferedReader br = new BufferedReader(fr);
 
             String line;
@@ -154,7 +237,9 @@ public class Customer
                 String[] idCnic = line.split(",");
                 if(idCnic[0].equals(id) && idCnic[1].equals(cnic))
                 {
-                    return true;
+                    custInfo = idCnic;
+                    getTaxData(idCnic[5],idCnic[6]);
+                    valid = true;
                 }
             }
             fr.close();
@@ -165,9 +250,119 @@ public class Customer
             System.out.println("Error: File Reading: " + e.getMessage());
         }
 
+        if(valid)
+        {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            String temp = id + ",Not Found,Not Found,Not Found,Not Found,Not Found,Not Found,Not Found,Not Found,Not Found,Not Found,Not Found";
+            try(BufferedReader br = new BufferedReader(new FileReader(billFilename))){
+                String line;
+                String[] data;
+                while((line=br.readLine())!=null){
+                    data = line.split(",");
+                    if(data[0].equals(id) && data[1].equals(month)){
+                        LocalDate date = LocalDate.parse(data[4],formatter);
+                        int fileYear = date.getYear();
+                        if(fileYear==year)
+                        {
+                            billInfo=data;
+                            break;
+                        }
+                    }
+                    else{
+                        billInfo=temp.split(",");
+                    }
+                }
+            }catch (IOException e){
+                System.out.println("Error:" + e.getMessage());
+            }
+            return true;
+        }
+
         return false;
     }
 
+    public boolean updateCNIC()
+    {
+        Scanner scanner = new Scanner(System.in);
+        String id;
+        String cnic;
+        while(true) {
+            System.out.print("Enter ID: ");
+            id = scanner.nextLine();
+
+            if (id.equals("00")) {
+                return false;
+            }
+
+            System.out.print("Enter CNIC: ");
+            cnic = scanner.nextLine();
+
+            if (cnic.equals("00")) {
+                return false;
+            }
+
+            if(isDigits(id) && isDigits(cnic) && searchNadraFile(cnic) && validateCustomer(id,cnic,"Jan",2024))
+            {
+                break;
+            }
+            System.out.println("Invalid ID or CNIC");
+        }
+        String newDate;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        LocalDate issueDate = LocalDate.parse(nadraInfo[1],formatter);
+        while(true)
+        {
+            System.out.print("Enter New Expiry Date (dd/MM/yyyy): ");
+            newDate = scanner.nextLine();
+            if(newDate.equals("00"))
+            {
+                return false;
+            }
+            try{
+                LocalDate date = LocalDate.parse(newDate,formatter);
+                if (date.isBefore(issueDate)) {
+                    System.out.println("Error: New Expiry Date cannot be before the Issue Date: " + nadraInfo[1]);
+                }
+                else
+                {
+                    break;
+                }
+            }catch(DateTimeParseException e)
+            {
+                System.out.println("Invalid Date : Try Again");
+            }
+        }
+
+        ArrayList<String> array = new ArrayList<>();
+        String line;
+        String[] data;
+        try(BufferedReader br = new BufferedReader(new FileReader("NADRADBfile.txt"))){
+            while((line= br.readLine())!=null){
+                data = line.split(",");
+                if(data[0].equals(cnic))
+                {
+                    array.add(data[0]+","+data[1]+","+newDate);
+                }
+                else{
+                    array.add(line);
+                }
+            }
+        }catch (IOException e){
+            System.out.println("Error: " + e.getMessage());
+        }
+
+        try(BufferedWriter bw = new BufferedWriter(new FileWriter("NADRADBfile.txt"))){
+            String line2;
+            for(int i=0;i<array.size();i++)
+            {
+                bw.write(array.get(i));
+                bw.newLine();
+            }
+        }catch (IOException e){
+            System.out.println("Error: " + e.getMessage());
+        }
+        return true;
+    }
     public void viewExpireCnic()
     {
         LocalDate today = LocalDate.now();
@@ -207,7 +402,7 @@ public class Customer
         String line="";
         int count=0;
         String[] data;
-        try(BufferedReader br = new BufferedReader(new FileReader(filename))){
+        try(BufferedReader br = new BufferedReader(new FileReader(custFilename))){
             while((line=br.readLine())!=null)
             {
                 data = line.split(",");
@@ -233,6 +428,7 @@ public class Customer
                 data = line.split(",");
                 if(data[0].equals(cnic))
                 {
+                    nadraInfo=data;
                     return true;
                 }
             }
@@ -242,6 +438,91 @@ public class Customer
         return false;
     }
 
+    public void viewBill()
+    {
+        String customerType="";
+        if(custInfo[5].equals("d") || custInfo[5].equals("D"))
+        {
+            customerType="Domestic";
+        }
+        else if(custInfo[5].equals("c") || custInfo[5].equals("C"))
+        {
+            customerType="Commercial";
+        }
+
+        String meterType="";
+        if(custInfo[6].equals("s") || custInfo[6].equals("S"))
+        {
+            meterType="Single Phase";
+        }
+        else if(custInfo[6].equals("t") || custInfo[6].equals("T"))
+        {
+            meterType="Three Phase";
+        }
+
+        float due=0;
+        if(!billInfo[10].equals("Paid") && !billInfo[10].equals("Not Found"))
+        {
+            due = Float.parseFloat(billInfo[8]);
+        }
+
+        System.out.println("========================================");
+        System.out.println("               LESCO BILL                ");
+        System.out.println("========================================");
+        System.out.println("Customer ID       : " + custInfo[0]);
+        System.out.println("Customer Name     : " + custInfo[2]);
+        System.out.println("CNIC Number       : " + custInfo[1]);
+        System.out.println("Address           : " + custInfo[3]);
+        System.out.println("Phone Number      : " + custInfo[4]);
+        System.out.println("Customer Type     : " + customerType);
+        System.out.println("Meter Type        : " + meterType);
+        System.out.println("----------------------------------------");
+        System.out.println("Regular Unit Price  : Rs. " + tariffInfo[1]);
+        System.out.println("Peak Hour Unit Price: Rs. " + tariffInfo[2]);
+        System.out.println("Percentage Of Tax   : Rs. " + tariffInfo[3]);
+        System.out.println("----------------------------------------");
+        System.out.println("Bill Month : " + billInfo[1]);
+        System.out.println("Current Meter Reading Regular : " + billInfo[2] + " units");
+        System.out.println("Current Meter Reading Peak    : " + billInfo[3] + " units");
+        System.out.println("----------------------------------------");
+        System.out.println("Cost of Electricity : Rs. " + billInfo[5]);
+        System.out.println("Sales Tax Amount    : Rs. " + billInfo[6]);
+        System.out.println("Fixed Charges       : Rs. " + tariffInfo[4]);
+        System.out.println("----------------------------------------");
+        System.out.println("Total Amount Due    : Rs. " + due);
+        System.out.println("Due Date            : " + billInfo[9]);
+        System.out.println("Payment Status      : " + billInfo[10]);
+    }
+    public void getTaxData(String custType, String phase)
+    {
+        try(BufferedReader br = new BufferedReader(new FileReader(tariffFilename))){
+
+            String line1 = br.readLine();
+            String line2 = br.readLine();
+            String line3 = br.readLine();
+            String line4 = br.readLine();
+
+            if((custType.equals("D") || custType.equals("d")) && (phase.equals("s") || phase.equals("S")))
+            {
+                tariffInfo = line1.split(",");
+            }
+            else if((custType.equals("c") || custType.equals("C")) && (phase.equals("s") || phase.equals("S")))
+            {
+                tariffInfo = line2.split(",");
+            }
+            else if((custType.equals("d") || custType.equals("D")) && (phase.equals("t") || phase.equals("T")))
+            {
+                tariffInfo = line3.split(",");
+            }
+            else if((custType.equals("c") || custType.equals("C")) && (phase.equals("t") || phase.equals("T")))
+            {
+                tariffInfo = line4.split(",");
+            }
+        }catch (IOException e)
+        {
+            System.out.println("Error Reading Tax File");
+        }
+    }
     public boolean isAlphabets(String str)
     {
         for(int i=0; i<str.length();i++)
@@ -267,7 +548,7 @@ public class Customer
     public boolean isUnique(String str, int index)
     {
         try {
-            FileReader fr = new FileReader(filename);
+            FileReader fr = new FileReader(custFilename);
             BufferedReader br = new BufferedReader(fr);
             String line;
 

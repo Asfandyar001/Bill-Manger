@@ -1,2 +1,0 @@
-1234,1234567891234,first last,address,12345678912,commercial or domestic, single or three phase,connection Date,RUC,PHUC
-2135,1234567890123,asfandyar,170-D Rehman Lahore,12345678912,D,S,13/09/2024,500,not_supported
