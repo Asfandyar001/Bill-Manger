@@ -4,7 +4,7 @@ import java.util.*;
 public class TaxManager {
     private String filename = "TariffTaxInfo.txt";
 
-    public void addTaxFile()
+    public void resetTaxFile()
     {
         String line1 = "1Phase,5,,17,150";
         String line2 = "1Phase,15,,20,250";

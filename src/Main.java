@@ -40,7 +40,7 @@ public class Main
         Billing b = new Billing();
         TaxManager t = new TaxManager();
         Customer c = new Customer();
-        t.addTaxFile();
+        t.resetTaxFile();
 
         Scanner scanner = new Scanner(System.in);
         String input;

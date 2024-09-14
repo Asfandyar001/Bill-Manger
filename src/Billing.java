@@ -9,14 +9,8 @@ public class Billing
     private String billFilename = "BillingInfo.txt";
     private String custFilename = "CustomerInfo.txt";
     private String taxFilename = "TariffTaxInfo.txt";
-    private ArrayList<String> arrayList;
-    private ArrayList<String> billList;
-
-    public Billing()
-    {
-        arrayList = new ArrayList<>();
-        billList = new ArrayList<>();
-    }
+    private String[] arrayList;
+    private String[] billList;
 
     public boolean addNewBill()
     {
@@ -69,38 +63,6 @@ public class Billing
             System.out.println("Incorrect Month: Try Again");
         }
 
-        while(true){
-            System.out.print("Enter Current Meter Reading: ");
-            currentMeterReading = scanner.nextLine();
-            if(currentMeterReading.equals("00"))
-            {
-                return false;
-            }
-            if(!currentMeterReading.equals("0")  && isDigits(currentMeterReading))
-            {
-                break;
-            }
-            System.out.println("Invalid Current Meter Readings: Try Again");
-        }
-
-        if(arrayList.get(6).equals("T") || arrayList.get(6).equals("t"))
-        {
-            while(true)
-            {
-                System.out.print("Enter Current Meter Reading Peak: ");
-                currentMeterReadingPeak = scanner.nextLine();
-                if(currentMeterReadingPeak.equals("00"))
-                {
-                    return false;
-                }
-                if(!currentMeterReadingPeak.equals("0")  && isDigits(currentMeterReadingPeak))
-                {
-                    break;
-                }
-                System.out.println("Invalid Current Meter Peak Readings: Try Again");
-            }
-        }
-
         String line;
         String[] data;
         LocalDate now = LocalDate.parse(readingEntryDate,formatter);
@@ -125,18 +87,52 @@ public class Billing
             System.out.println("Error: " + e.getMessage());
         }
 
-        String[] tax = getTaxData(arrayList.get(5), arrayList.get(6));
+        while(true){
+            System.out.print("Enter Current Meter Reading: ");
+            currentMeterReading = scanner.nextLine();
+            if(currentMeterReading.equals("00"))
+            {
+                return false;
+            }
+            if(!currentMeterReading.equals("0")  && isDigits(currentMeterReading))
+            {
+                break;
+            }
+            System.out.println("Invalid Current Meter Readings: Try Again");
+        }
+
+        String meter = arrayList[6];
+
+        if(meter.equals("T") || meter.equals("t"))
+        {
+            while(true)
+            {
+                System.out.print("Enter Current Meter Reading Peak: ");
+                currentMeterReadingPeak = scanner.nextLine();
+                if(currentMeterReadingPeak.equals("00"))
+                {
+                    return false;
+                }
+                if(!currentMeterReadingPeak.equals("0")  && isDigits(currentMeterReadingPeak))
+                {
+                    break;
+                }
+                System.out.println("Invalid Current Meter Peak Readings: Try Again");
+            }
+        }
+
+        String[] tax = getTaxData(arrayList[5], arrayList[6]);
 
         float costOfElectricity = 0;
-        if(arrayList.get(6).equals("s") || arrayList.get(6).equals("S"))
+        if(meter.equals("s") || meter.equals("S"))
         {
-            costOfElectricity = Float.parseFloat(currentMeterReading) - Float.parseFloat(arrayList.get(8));
+            costOfElectricity = Float.parseFloat(currentMeterReading) - Float.parseFloat(arrayList[8]);
             costOfElectricity = costOfElectricity * Float.parseFloat(tax[1]);
         }
-        else if(arrayList.get(6).equals("t") || arrayList.get(6).equals("T"))
+        else if(meter.equals("t") || meter.equals("T"))
         {
-            float regular = (Float.parseFloat(currentMeterReading) - Float.parseFloat(arrayList.get(8))) * Float.parseFloat(tax[1]);
-            float peak = (Float.parseFloat(currentMeterReadingPeak) - Float.parseFloat(arrayList.get(9))) * Float.parseFloat(tax[2]);
+            float regular = (Float.parseFloat(currentMeterReading) - Float.parseFloat(arrayList[8])) * Float.parseFloat(tax[1]);
+            float peak = (Float.parseFloat(currentMeterReadingPeak) - Float.parseFloat(arrayList[9])) * Float.parseFloat(tax[2]);
             costOfElectricity = regular + peak;
         }
 
@@ -401,10 +397,7 @@ public class Billing
             while ((line = br.readLine()) != null) {
                 String[] index = line.split(",");
                 if (index[0].equals(id)) {
-                    for(int i=0; i<index.length; i++)
-                    {
-                        arrayList.add(index[i]);
-                    }
+                    arrayList = index;
                     return true;
                 }
             }
@@ -427,10 +420,7 @@ public class Billing
             while ((line = br.readLine()) != null) {
                 String[] index = line.split(",");
                 if (index[0].equals(id) && index[1].equals(month) && index[4].equals(date)) {
-                    for(int i=0; i<index.length; i++)
-                    {
-                        billList.add(index[i]);
-                    }
+                    billList = index;
                     return true;
                 }
             }
@@ -501,18 +491,18 @@ public class Billing
         }
 
         System.out.println("\n--------------------------------------------------\n\t\t\t  LESCO Billing Data\n--------------------------------------------------\n\n" +
-                "Customer ID:                 "+billList.get(0)+"\n"+
-                "Billing Month:               "+billList.get(1)+"\n"+
-                "Current Meter Reading:       "+billList.get(2)+" units\n"+
-                "Peak Meter Reading:          "+billList.get(3)+" units\n"+
-                "Reading Entry Date:          "+billList.get(4)+"\n"+
-                "Cost of Electricity:         Rs. "+billList.get(5)+"\n"+
-                "Sales Tax Amount:            Rs. "+billList.get(6)+"\n"+
-                "Fixed Charges:               Rs. "+billList.get(7)+"\n"+
-                "Total Billing Amount:        Rs. "+billList.get(8)+"\n"+
-                "Due Date:                    "+billList.get(9)+"\n"+
-                "Bill Paid Status:            "+billList.get(10)+"\n"+
-                "Bill Payment Date:           "+billList.get(11)+"\n");
+                "Customer ID:                 "+billList[0]+"\n"+
+                "Billing Month:               "+billList[1]+"\n"+
+                "Current Meter Reading:       "+billList[2]+" units\n"+
+                "Peak Meter Reading:          "+billList[3]+" units\n"+
+                "Reading Entry Date:          "+billList[4]+"\n"+
+                "Cost of Electricity:         Rs. "+billList[5]+"\n"+
+                "Sales Tax Amount:            Rs. "+billList[6]+"\n"+
+                "Fixed Charges:               Rs. "+billList[7]+"\n"+
+                "Total Billing Amount:        Rs. "+billList[8]+"\n"+
+                "Due Date:                    "+billList[9]+"\n"+
+                "Bill Paid Status:            "+billList[10]+"\n"+
+                "Bill Payment Date:           "+billList[11]+"\n");
         return true;
     }
 

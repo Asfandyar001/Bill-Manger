@@ -12,7 +12,7 @@ public class Customer
     private String billFilename = "BillingInfo.txt";
     private String tariffFilename = "TariffTaxInfo.txt";
     private String[] custInfo;
-    private String[] billInfo;
+    private String[] billInfo = new String[]{"Not Found", "Not Found", "Not Found", "Not Found", "Not Found", "Not Found", "Not Found", "Not Found", "Not Found", "Not Found", "Not Found", "Not Found"};
     private String[] tariffInfo;
     private String[] nadraInfo;
 
@@ -249,11 +249,10 @@ public class Customer
         {
             System.out.println("Error: File Reading: " + e.getMessage());
         }
-
+        billInfo = new String[]{"Not Found", "Not Found", "Not Found", "Not Found", "Not Found", "Not Found", "Not Found", "Not Found", "Not Found", "Not Found", "Not Found", "Not Found"};
         if(valid)
         {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-            String temp = id + ",Not Found,Not Found,Not Found,Not Found,Not Found,Not Found,Not Found,Not Found,Not Found,Not Found,Not Found";
             try(BufferedReader br = new BufferedReader(new FileReader(billFilename))){
                 String line;
                 String[] data;
@@ -267,9 +266,6 @@ public class Customer
                             billInfo=data;
                             break;
                         }
-                    }
-                    else{
-                        billInfo=temp.split(",");
                     }
                 }
             }catch (IOException e){
