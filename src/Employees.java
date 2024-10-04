@@ -1,5 +1,8 @@
+import javax.swing.*;
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Scanner;
 
 public class Employees
 {
@@ -31,35 +34,28 @@ public class Employees
         return false;
     }
 
-    public String updateMenu(String username, String oldPass)
+    public String updateMenu(String username, String oldPass,Emp_Update_Password updatePassword)
     {
-        Scanner input = new Scanner(System.in);
-        String inName;
-        String inPass;
-        String newPass;
-
-        System.out.print("Enter current Username: ");
-        inName = input.nextLine();
-
-        System.out.print("Enter current Password: ");
-        inPass = input.nextLine();
-
-        System.out.print("Enter new Password: ");
-        newPass = input.nextLine();
+        String inName = updatePassword.getUserName();
+        String inPass = updatePassword.getOld();
+        String newPass = updatePassword.getNewPass();
 
         if(newPass.equals(inPass))
         {
-            System.out.println("\nNew Password cannot be same as Old Password");
+            JOptionPane.showMessageDialog(null,"New Password cannot be same as Old Password","Error",JOptionPane.ERROR_MESSAGE);
+        }
+        else if(newPass.isEmpty() || newPass.equals("Type your new Password")){
+            JOptionPane.showMessageDialog(null,"New Password is Empty or Invalid","Error",JOptionPane.ERROR_MESSAGE);
         }
         else if(inName.equals(username) && oldPass.equals(inPass))
         {
             updatePass(username,newPass);
-            System.out.println("\nPassword Updated Successfully");
+            JOptionPane.showMessageDialog(null,"Password Updated Successfully","Success",JOptionPane.INFORMATION_MESSAGE);
             return newPass;
         }
         else
         {
-            System.out.println("\nUsername or Password Do not Match");
+            JOptionPane.showMessageDialog(null,"Username or Password Do not Match","Error",JOptionPane.ERROR_MESSAGE);
         }
         return "no change";
     }

@@ -1,10 +1,12 @@
+import javax.swing.*;
 import java.io.*;
-import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Random;
+import java.util.Scanner;
 
 public class Customer
 {
@@ -15,79 +17,116 @@ public class Customer
     private String[] billInfo = new String[]{"Not Found", "Not Found", "Not Found", "Not Found", "Not Found", "Not Found", "Not Found", "Not Found", "Not Found", "Not Found", "Not Found", "Not Found"};
     private String[] tariffInfo;
     private String[] nadraInfo;
+    private String userName;
 
-    public void CustInMenu(){
-        Scanner scanner = new Scanner(System.in);
-        String id;
-        String cnic;
-        String month;
-        String year;
-        int intYear=0;
-
-        Customer c = new Customer();
-
-        while(true) {
-            System.out.println("\nGo Back -> 00\n");
-            System.out.print("Enter ID: ");
-            id = scanner.nextLine();
-
-            if(id.equals("00"))
-            {
-                break;
-            }
-
-            System.out.print("Enter CNIC: ");
-            cnic = scanner.nextLine();
-
-            if(cnic.equals("00"))
-            {
-                break;
-            }
-
-            while(true)
-            {
-                System.out.print("Enter Bill Month: ");
-                month = scanner.nextLine();
-
-                if(month.equals("00"))
-                {
+    public boolean isCustomerValid(String id, String cnic)
+    {
+        boolean valid = false;
+        try(BufferedReader br = new BufferedReader(new FileReader(custFilename))){
+            String line;
+            while ((line=br.readLine())!=null){
+                String[] data = line.split(",");
+                if(data[0].equals(id) && data[1].equals(cnic)){
+                    valid=true;
+                    userName = data[2];
                     break;
                 }
-                if(month.equals("Jan") || month.equals("Feb") || month.equals("Mar") || month.equals("April") || month.equals("May") || month.equals("June") || month.equals("July") || month.equals("August") || month.equals("Sept") || month.equals("Oct") || month.equals("Nov") || month.equals("Dec"))
-                {
-                    break;
-                }
-                System.out.println("Incorrect Month: Try Again");
             }
-            if(month.equals("00"))
-            {
-                break;
-            }
-
-            while(true) {
-                System.out.print("Enter Year: ");
-                year = scanner.nextLine();
-
-                if (year.equals("00")) {
-                    break;
-                }
-                if(year.matches("\\d{4}") && Integer.parseInt(year) > 0)
-                {
-                    intYear = Integer.parseInt(year);
-                    break;
-                }
-                System.out.println("Invalid Year Try Again");
-            }
-            if (year.equals("00")) {
-                break;
-            }
-
-            if (validateCustomer(id, cnic,month,intYear)) {
-                viewBill();
-            } else {
-                System.out.print("\n\nIncorrect ID or CNIC");
-            }
+        }catch (IOException e)
+        {
+            System.out.println("Error: " + e.getMessage());
         }
+
+        return valid;
+    }
+
+    public String getUserName()
+    {
+        return userName;
+    }
+
+    public void CustInMenu(frame f, String name, Cust_Bill_Not_Found noBill)
+    {
+        Customer c = new Customer();
+        Cust_Bill_Found yesBill = new Cust_Bill_Found("","");
+        Cust_CNIC_Not_Updated noCNICupdate = new Cust_CNIC_Not_Updated(name);
+        Cust_CNIC_Updated yesCNICupdated = new Cust_CNIC_Updated(name);
+
+        //----------------------Bill Not Found Screen Settings---------------//
+
+        noBill.getLogoutButton().addActionListener(eListen->{
+            f.destroy();
+            GUI_Manager g = new GUI_Manager();
+        });
+        noBill.getSearchButton().addActionListener(eListen->{
+
+            if(!isDigits(noBill.getYear())){
+                JOptionPane.showMessageDialog(null,"Invalid Inputs", "Error",JOptionPane.ERROR_MESSAGE);
+            }
+            else if (validateCustomer(noBill.getID(), noBill.getCNIC(),noBill.getMonth(), Integer.parseInt(noBill.getYear()))) {
+                yesBill.clearData();
+                ArrayList<String> list = viewBill();
+                yesBill.setNameStatus(name,list.get(18));
+                yesBill.setData(list);
+                f.replacePanel(noBill,yesBill);
+                yesBill.revalidate();
+                yesBill.repaint();
+            }
+            else
+            {
+                JOptionPane.showMessageDialog(null,"Incorrect ID or CNIC", "Error",JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        noBill.getUpdateCNICButton().addActionListener(eListen->{
+            f.replacePanel(noBill,noCNICupdate);
+        });
+
+        //----------------------Bill Found Screen Settings---------------//
+
+        yesBill.getGobackButton().addActionListener(eListen3->{
+            f.replacePanel(yesBill,noBill);
+        });
+        yesBill.getLogoutButton().addActionListener(eListen2->{
+            f.destroy();
+            GUI_Manager g = new GUI_Manager();
+        });
+        yesBill.getUpdateCNICButton().addActionListener(eListen1->{
+            f.replacePanel(yesBill,noCNICupdate);
+        });
+
+        //----------------------Cnic Not Updated Screen Settings---------------//
+
+        noCNICupdate.getUpdateButton().addActionListener(eListen2->{
+            if(c.updateCNIC(noCNICupdate.getID(),noCNICupdate.getCNIC(),noCNICupdate.getMonth()))
+            {
+                f.replacePanel(noCNICupdate,yesCNICupdated);
+            }
+        });
+        noCNICupdate.getLogoutButton().addActionListener(eListen3->{
+            f.destroy();
+            GUI_Manager g = new GUI_Manager();
+        });
+        noCNICupdate.getViewBillButton().addActionListener(eListen4->{
+            f.replacePanel(noCNICupdate,noBill);
+        });
+
+        //----------------------Cnic Updated Screen Settings---------------//
+
+        yesCNICupdated.getUpdateButton().addActionListener(eListen3 ->{
+            if(c.updateCNIC(yesCNICupdated.getID(), yesCNICupdated.getCNIC(), yesCNICupdated.getMonth()))
+            {
+            }
+            else{
+                f.replacePanel(yesCNICupdated,noCNICupdate);
+            }
+        });
+        yesCNICupdated.getLogoutButton().addActionListener(eListen4->{
+            f.destroy();
+            GUI_Manager g = new GUI_Manager();
+        });
+        yesCNICupdated.getViewBillButton().addActionListener(eListen5->{
+            f.replacePanel(yesCNICupdated,noBill);
+        });
     }
 
     public boolean addCustomer()
@@ -277,39 +316,17 @@ public class Customer
         return false;
     }
 
-    public boolean updateCNIC()
+    public boolean updateCNIC(String id, String cnic, String newDate)
     {
-        Scanner scanner = new Scanner(System.in);
-        String id;
-        String cnic;
-        while(true) {
-            System.out.print("Enter ID: ");
-            id = scanner.nextLine();
-
-            if (id.equals("00")) {
-                return false;
-            }
-
-            System.out.print("Enter CNIC: ");
-            cnic = scanner.nextLine();
-
-            if (cnic.equals("00")) {
-                return false;
-            }
-
-            if(isDigits(id) && isDigits(cnic) && searchNadraFile(cnic) && validateCustomer(id,cnic,"Jan",2024))
+            if(isDigits(id) && isDigits(cnic) && searchNadraFile(cnic) && isCustomerValid(id,cnic))
             {
-                break;
             }
-            System.out.println("Invalid ID or CNIC");
-        }
-        String newDate;
+            else{
+                JOptionPane.showMessageDialog(null,"Invalid ID or CNIC","Error",JOptionPane.ERROR_MESSAGE);
+            return false;
+            }
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         LocalDate issueDate = LocalDate.parse(nadraInfo[1],formatter);
-        while(true)
-        {
-            System.out.print("Enter New Expiry Date (dd/MM/yyyy): ");
-            newDate = scanner.nextLine();
             if(newDate.equals("00"))
             {
                 return false;
@@ -317,17 +334,14 @@ public class Customer
             try{
                 LocalDate date = LocalDate.parse(newDate,formatter);
                 if (date.isBefore(issueDate)) {
-                    System.out.println("Error: New Expiry Date cannot be before the Issue Date: " + nadraInfo[1]);
-                }
-                else
-                {
-                    break;
+                    JOptionPane.showMessageDialog(null,"Error: New Expiry Date cannot be before the Issue Date: " + nadraInfo[1],"Error",JOptionPane.ERROR_MESSAGE);
+                    return false;
                 }
             }catch(DateTimeParseException e)
             {
-                System.out.println("Invalid Date : Try Again");
+                JOptionPane.showMessageDialog(null,"Invalid Date : Try Again","Error",JOptionPane.ERROR_MESSAGE);
+                return false;
             }
-        }
 
         ArrayList<String> array = new ArrayList<>();
         String line;
@@ -359,7 +373,7 @@ public class Customer
         }
         return true;
     }
-    public void viewExpireCnic()
+    public ArrayList<String> viewExpireCnic()
     {
         LocalDate today = LocalDate.now();
         LocalDate expiry;
@@ -378,19 +392,13 @@ public class Customer
                 daysInBetween = ChronoUnit.DAYS.between(today,expiry);
                 if(daysInBetween<=30 && daysInBetween>0)
                 {
-                    list.add(data[0]+"          "+data[2]);
+                    list.add(data[0] + "," + data[2]);
                 }
             }
         }catch(IOException e){
             System.out.println("Error: " + e.getMessage());
         }
-
-        System.out.println("\nTotal CNIC's Expiring in 30 Days: " + list.size() + "\n");
-        System.out.println("    CNIC\t\t\t   Expiry Date");
-        for(int i=0;i<list.size();i++)
-        {
-            System.out.println(list.get(i));
-        }
+        return list;
     }
 
     public int cnic_count(String cnic)
@@ -434,7 +442,7 @@ public class Customer
         return false;
     }
 
-    public void viewBill()
+    public ArrayList<String> viewBill()
     {
         String customerType="";
         if(custInfo[5].equals("d") || custInfo[5].equals("D"))
@@ -462,32 +470,28 @@ public class Customer
             due = Float.parseFloat(billInfo[8]);
         }
 
-        System.out.println("========================================");
-        System.out.println("               LESCO BILL                ");
-        System.out.println("========================================");
-        System.out.println("Customer ID       : " + custInfo[0]);
-        System.out.println("Customer Name     : " + custInfo[2]);
-        System.out.println("CNIC Number       : " + custInfo[1]);
-        System.out.println("Address           : " + custInfo[3]);
-        System.out.println("Phone Number      : " + custInfo[4]);
-        System.out.println("Customer Type     : " + customerType);
-        System.out.println("Meter Type        : " + meterType);
-        System.out.println("----------------------------------------");
-        System.out.println("Regular Unit Price  : Rs. " + tariffInfo[1]);
-        System.out.println("Peak Hour Unit Price: Rs. " + tariffInfo[2]);
-        System.out.println("Percentage Of Tax   : Rs. " + tariffInfo[3]);
-        System.out.println("----------------------------------------");
-        System.out.println("Bill Month : " + billInfo[1]);
-        System.out.println("Current Meter Reading Regular : " + billInfo[2] + " units");
-        System.out.println("Current Meter Reading Peak    : " + billInfo[3] + " units");
-        System.out.println("----------------------------------------");
-        System.out.println("Cost of Electricity : Rs. " + billInfo[5]);
-        System.out.println("Sales Tax Amount    : Rs. " + billInfo[6]);
-        System.out.println("Fixed Charges       : Rs. " + tariffInfo[4]);
-        System.out.println("----------------------------------------");
-        System.out.println("Total Amount Due    : Rs. " + due);
-        System.out.println("Due Date            : " + billInfo[9]);
-        System.out.println("Payment Status      : " + billInfo[10]);
+        ArrayList<String> list = new ArrayList<>();
+        list.add(custInfo[0]);
+        list.add(custInfo[2]);
+        list.add(custInfo[1]);
+        list.add(custInfo[3]);
+        list.add(custInfo[4]);
+        list.add(customerType);
+        list.add(meterType);
+        list.add(billInfo[5]);
+        list.add(billInfo[6]);
+        list.add(tariffInfo[4]);
+        list.add(billInfo[1]);
+        list.add(billInfo[2] + " units");
+        list.add(billInfo[3] + " units");
+        list.add(tariffInfo[1]);
+        list.add(tariffInfo[2]);
+        list.add(tariffInfo[3]);
+        list.add(String.valueOf(due));
+        list.add(billInfo[9]);
+        list.add(billInfo[10]);
+
+        return list;
     }
     public void getTaxData(String custType, String phase)
     {

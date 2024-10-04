@@ -1,237 +1,75 @@
+import javax.swing.*;
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Scanner;
 
 public class TaxManager {
     private String filename = "TariffTaxInfo.txt";
 
-    public void resetTaxFile()
-    {
-        String line1 = "1Phase,5,,17,150";
-        String line2 = "1Phase,15,,20,250";
-        String line3 = "3Phase,8,12,17,150";
-        String line4 = "3Phase,18,25,20,250";
-
-        try(BufferedWriter bw = new BufferedWriter(new FileWriter(filename))){
-            bw.write(line1);
-            bw.newLine();
-            bw.write(line2);
-            bw.newLine();
-            bw.write(line3);
-            bw.newLine();
-            bw.write(line4);
-            bw.newLine();
-        }catch(IOException e)
-        {
+    public ArrayList<String> getData(){
+        ArrayList<String> list = new ArrayList<>();
+        try(BufferedReader br = new BufferedReader(new FileReader(filename))){
+            String line;
+            while((line=br.readLine())!=null){
+                list.add(line);
+            }
+        }catch(IOException e){
             System.out.println("Error: " + e.getMessage());
         }
+        return list;
     }
 
-    public boolean updateTaxMenu()
+    public boolean updateTaxMenu(int lineCount, Emp_TaxesInfo taxesInfo)
     {
-        Scanner scanner = new Scanner(System.in);
-        String meterType;
-        String custType;
-
-        while(true) {
-            System.out.print("\n\nChoose the Customer Type:\n1) Domestic\n2) Commercial\n\nChoice: ");
-            custType = scanner.nextLine();
-
-            if(custType.equals("00"))
-            {
-                return false;
-            }
-            else if(custType.equals("1"))
-            {
-                custType = "d";
-                break;
-            }
-            else if(custType.equals("2"))
-            {
-                custType = "c";
-                break;
-            }
-            else{
-                System.out.println("Invalid Choice: Try Again");
-            }
+        if(lineCount==1 && isDigits(taxesInfo.getR1().getText()) && isDigits(taxesInfo.getT1().getText()) && isDigits(taxesInfo.getFC1().getText())){
+            String newline = "1Phase," + taxesInfo.getR1().getText() + ",," + taxesInfo.getT1().getText() + "," + taxesInfo.getFC1().getText();
+            performTaxChanges(1,newline);
         }
-
-        while(true) {
-            System.out.print("\n\nChoose the Meter Type:\n1) Single\n2) Three\n\nChoice: ");
-            meterType = scanner.nextLine();
-
-            if(meterType.equals("00"))
-            {
-                return false;
-            }
-            else if(meterType.equals("1"))
-            {
-                meterType = "s";
-                break;
-            }
-            else if(meterType.equals("2"))
-            {
-                meterType = "t";
-                break;
-            }
-            else{
-                System.out.println("Invalid Choice: Try Again");
-            }
+        else if(lineCount==2 && isDigits(taxesInfo.getR2().getText()) && isDigits(taxesInfo.getT2().getText()) && isDigits(taxesInfo.getFC2().getText())){
+            String newline = "1Phase," + taxesInfo.getR2().getText() + ",," + taxesInfo.getT2().getText() + "," + taxesInfo.getFC2().getText();
+            performTaxChanges(2,newline);
         }
-
-        int row=0;
-        int col = 0;
-        if(custType.equals("d") && meterType.equals("s"))
-        {
-            row = 1;
+        else if(lineCount==3 && isDigits(taxesInfo.getR3().getText()) && isDigits(taxesInfo.getP3().getText()) && isDigits(taxesInfo.getT3().getText()) && isDigits(taxesInfo.getFC3().getText())){
+            String newline = "3Phase," + taxesInfo.getR3().getText() + "," + taxesInfo.getP3().getText() + "," + taxesInfo.getT3().getText() + "," + taxesInfo.getFC3().getText();
+            performTaxChanges(3,newline);
         }
-        else if(custType.equals("c") && meterType.equals("s"))
-        {
-            row = 2;
+        else if(lineCount==4 && isDigits(taxesInfo.getR4().getText()) && isDigits(taxesInfo.getP4().getText()) && isDigits(taxesInfo.getT4().getText()) && isDigits(taxesInfo.getFC4().getText())){
+            String newline = "3Phase," + taxesInfo.getR4().getText() + "," + taxesInfo.getP4().getText() + "," + taxesInfo.getT4().getText() + "," + taxesInfo.getFC4().getText();
+            performTaxChanges(4,newline);
         }
-        else if(custType.equals("d") && meterType.equals("t"))
-        {
-            row=3;
-        }
-        else if(custType.equals("c") && meterType.equals("t"))
-        {
-            row=4;
-        }
-
-        if(meterType.equals("s")) {
-            String value="";
-            String input;
-            while (true) {
-                System.out.print("\n\nYou want to Change:\n1) Regular Unit Price\n2) Percentage of Tax\n3) Fixed Charged\n4) Exit\n\nChoice: ");
-                input = scanner.nextLine();
-                if (input.equals("4")) {
-                    return false;
-                }
-
-                System.out.print("Enter Value: ");
-                value = scanner.nextLine();
-
-                if(!isDigits(value))
-                {
-                    System.out.println("Invalid Choice: Try Again");
-                    continue;
-                }
-                if(Integer.parseInt(value)<0)
-                {
-                    System.out.println("Invalid Choice: Try Again");
-                    continue;
-                }
-
-                if (input.equals("1")) {
-                    col=1;
-                    performTaxChanges(row,col,value);
-                }
-                else if (input.equals("2")) {
-                    col=3;
-                    performTaxChanges(row,col,value);
-                }
-                else if (input.equals("3")) {
-                    col=4;
-                    performTaxChanges(row,col,value);
-                }
-                else {
-                    System.out.println("Invalid Choice: Try Again");
-                }
-            }
-        }
-        else if(meterType.equals("t")) {
-            String value="";
-            String input;
-            while (true) {
-                System.out.print("\n\nYou want to Change:\n1) Regular Unit Price\n2) Peak Hour Unit Price\n3) Percentage of Tax\n4) Fixed Charged\n5) Exit\n\nChoice: ");
-                input = scanner.nextLine();
-                if (input.equals("5")) {
-                    return false;
-                }
-                System.out.print("Enter Value: ");
-                value = scanner.nextLine();
-
-                if(!isDigits(value))
-                {
-                    System.out.println("Invalid Choice: Try Again");
-                    continue;
-                }
-                if(Integer.parseInt(value)<0)
-                {
-                    System.out.println("Invalid Choice: Try Again");
-                    continue;
-                }
-
-                if (input.equals("1")) {
-                    col=1;
-                    performTaxChanges(row,col,value);
-                }
-                else if (input.equals("2")) {
-                    col=2;
-                    performTaxChanges(row,col,value);
-                }
-                else if (input.equals("3")) {
-                    col=3;
-                    performTaxChanges(row,col,value);
-                }
-                else if (input.equals("4")) {
-                    col=4;
-                    performTaxChanges(row,col,value);
-                }
-                else if (input.equals("5")) {
-                    return false;
-                }
-                else {
-                    System.out.println("Invalid Choice: Try Again");
-                }
-            }
+        else{
+            JOptionPane.showMessageDialog(null,"Invalid Values Entered: Unable to Update","Error",JOptionPane.ERROR_MESSAGE);
+            taxesInfo.removeVaalues();
+            taxesInfo.setValues(getData());
+            return false;
         }
         return true;
     }
 
-    public void performTaxChanges(int row, int col, String value)
+    public void performTaxChanges(int row, String value)
     {
-        String line;
-        String[] data;
-        ArrayList<String> array = new ArrayList<>();
-        int count=1;
-
-        try(BufferedReader br = new BufferedReader(new FileReader(filename)))
-        {
-            while((line= br.readLine())!=null)
-            {
-                if(count == row)
-                {
-                    data = line.split(",");
-                    data[col] = value;
-                    array.add(data[0] + "," + data[1] + "," + data[2] + "," + data[3] + "," + data[4]);
-                }
-                else
-                {
-                    array.add(line);
-                }
-                count++;
-            }
-        }catch(IOException e)
-        {
-            System.out.println("Error: " + e.getMessage());
-        }
+        ArrayList<String> list = getData();
 
         try(BufferedWriter bw = new BufferedWriter(new FileWriter(filename))){
-            for(int i=0;i<array.size();i++)
-            {
-                bw.write(array.get(i));
-                bw.newLine();
+            for(int i=0; i< list.size(); i++) {
+                if (i+1 == row) {
+                    bw.write(value);
+                    bw.newLine();
+                } else {
+                    bw.write(list.get(i));
+                    bw.newLine();
+                }
             }
-        }catch(IOException e)
-        {
+        }catch (IOException e){
             System.out.println("Error: " + e.getMessage());
         }
-
-        System.out.println("\n\nTaxes Updated Successfully!");
     }
 
     public boolean isDigits(String str)
     {
+        if(str.isBlank() || str.isEmpty()){
+            return false;
+        }
         for(int i=0; i<str.length();i++)
         {
             if(!Character.isDigit(str.charAt(i)))

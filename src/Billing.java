@@ -1,8 +1,10 @@
+import javax.swing.*;
 import java.io.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Billing
 {
@@ -145,61 +147,38 @@ public class Billing
         return true;
     }
 
-    public boolean changePaidStatus()
+    public boolean changePaidStatus(Emp_Change_Bill_Status changeStatus)
     {
-        Scanner scanner = new Scanner(System.in);
-        String custID;
-        String billingMonth;
+        String custID = changeStatus.getCustID();
+        String billingMonth = changeStatus.getBillingMonth();
 
-        while(true)
+        if(billingMonth.equals("Jan") || billingMonth.equals("Feb") || billingMonth.equals("Mar") || billingMonth.equals("April") || billingMonth.equals("May") || billingMonth.equals("June") || billingMonth.equals("July") || billingMonth.equals("August") || billingMonth.equals("Sept") || billingMonth.equals("Oct") || billingMonth.equals("Nov") || billingMonth.equals("Dec"))
         {
-            System.out.print("Enter Billing Month: ");
-            billingMonth = scanner.nextLine();
-
-            if(billingMonth.equals("00"))
-            {
-                return false;
-            }
-            if(billingMonth.equals("Jan") || billingMonth.equals("Feb") || billingMonth.equals("Mar") || billingMonth.equals("April") || billingMonth.equals("May") || billingMonth.equals("June") || billingMonth.equals("July") || billingMonth.equals("August") || billingMonth.equals("Sept") || billingMonth.equals("Oct") || billingMonth.equals("Nov") || billingMonth.equals("Dec"))
-            {
-                break;
-            }
-            System.out.println("Incorrect Month: Try Again");
+        }
+        else{
+            JOptionPane.showMessageDialog(null,"Incorrect Month","Error",JOptionPane.ERROR_MESSAGE);
+            return false;
         }
 
-        String entryDate;
+        String entryDate = changeStatus.getDate();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-        while(true)
+        try{
+            LocalDate date = LocalDate.parse(entryDate,formatter);
+        }catch(DateTimeParseException e)
         {
-            System.out.print("Enter Bill Entry Date (dd/MM/yyyy): ");
-            entryDate = scanner.nextLine();
-            if(entryDate.equals("00"))
-            {
-                return false;
-            }
-            try{
-                LocalDate date = LocalDate.parse(entryDate,formatter);
-                break;
-            }catch(DateTimeParseException e)
-            {
-                System.out.println("Invalid Date : Try Again");
-            }
+            JOptionPane.showMessageDialog(null,"Invalid Date: dd/MM/yyyy","Error",JOptionPane.ERROR_MESSAGE);
+            return false;
         }
 
-        while(true)
+
+        if(validateCustomerID(custID))
         {
-            System.out.print("Enter Customer ID: ");
-            custID = scanner.nextLine();
-            if(custID.equals("00"))
-            {
-                return false;
-            }
-            if(validateCustomerID(custID))
-            {
-                break;
-            }
-            System.out.println("Customer ID Invalid: Try Again");
+
+        }
+        else{
+            JOptionPane.showMessageDialog(null,"Customer ID Invalid","Error",JOptionPane.ERROR_MESSAGE);
+            return false;
         }
 
         String readingEntryDate="";
@@ -229,40 +208,30 @@ public class Billing
 
         if(!found)
         {
-            System.out.println("No Such Bill Found");
+            JOptionPane.showMessageDialog(null,"No Such Bill Found","Error",JOptionPane.ERROR_MESSAGE);
             return false;
         }
 
         if(status.equals("Paid"))
         {
-            System.out.println("The Status was Already Updated to Paid");
+            JOptionPane.showMessageDialog(null,"The Status was Already Updated to Paid","Error",JOptionPane.INFORMATION_MESSAGE);
             return false;
         }
 
-        String paymentDate="";
+        String paymentDate= changeStatus.getReceivedDate();
         LocalDate readingDate = LocalDate.parse(readingEntryDate,formatter);
-        boolean valid = false;
-        while(!valid)
-        {
-            System.out.print("Enter Bill Paid Date (dd/MM/yyyy): ");
-            paymentDate = scanner.nextLine();
-            if(paymentDate.equals("00"))
+
+        try{
+            LocalDate date = LocalDate.parse(paymentDate,formatter);
+            if(date.isBefore(readingDate))
             {
+                JOptionPane.showMessageDialog(null,"Payment Date is before Reading Date","Error",JOptionPane.ERROR_MESSAGE);
                 return false;
             }
-            try{
-                LocalDate date = LocalDate.parse(paymentDate,formatter);
-                if(date.isBefore(readingDate))
-                {
-                    System.out.println("Error: Payment Date is before Reading Date: Try Again");
-                }
-                else {
-                    valid = true;
-                }
-            }catch(DateTimeParseException e)
-            {
-                System.out.println("Invalid Date : Try Again");
-            }
+        }catch(DateTimeParseException e)
+        {
+            JOptionPane.showMessageDialog(null,"Invalid Received Date : dd/MM/yyyy","Error",JOptionPane.ERROR_MESSAGE);
+            return false;
         }
 
         ArrayList<String> array = new ArrayList<>();
@@ -433,80 +402,47 @@ public class Billing
         return false;
     }
 
-    public boolean viewBill()
+    public boolean viewBill(frame f, Emp_ViewBill_NoBill noBill)
     {
-        Scanner scanner = new Scanner(System.in);
-        String custID;
-        String billingMonth;
-        while(true)
-        {
-            System.out.print("Enter Billing Month: ");
-            billingMonth = scanner.nextLine();
+        String custID = noBill.getCustID();
+        String billingMonth = noBill.getBillingMonth();
 
-            if(billingMonth.equals("00"))
-            {
-                return false;
-            }
             if(billingMonth.equals("Jan") || billingMonth.equals("Feb") || billingMonth.equals("Mar") || billingMonth.equals("April") || billingMonth.equals("May") || billingMonth.equals("June") || billingMonth.equals("July") || billingMonth.equals("August") || billingMonth.equals("Sept") || billingMonth.equals("Oct") || billingMonth.equals("Nov") || billingMonth.equals("Dec"))
             {
-                break;
             }
-            System.out.println("Incorrect Month: Try Again");
-        }
+            else{
+                JOptionPane.showMessageDialog(null,"Incorrect Billing Month","Error",JOptionPane.ERROR_MESSAGE);
+                return false;
+            }
 
-        String entryDate;
+        String entryDate = noBill.getDate();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-        while(true)
-        {
-            System.out.print("Enter Bill Entry Date (dd/MM/yyyy): ");
-            entryDate = scanner.nextLine();
-            if(entryDate.equals("00"))
-            {
-                return false;
-            }
-            try{
-                LocalDate date = LocalDate.parse(entryDate,formatter);
-                break;
-            }catch(DateTimeParseException e)
-            {
-                System.out.println("Invalid Date : Try Again");
-            }
+        try{
+            LocalDate date = LocalDate.parse(entryDate,formatter);
+        }catch(DateTimeParseException e) {
+            JOptionPane.showMessageDialog(null,"Invalid Date : dd/MM/yyyy","Error",JOptionPane.ERROR_MESSAGE);
+            return false;
         }
 
-        while(true)
-        {
-            System.out.print("Enter Customer ID: ");
-            custID = scanner.nextLine();
-
-            if(custID.equals("00"))
-            {
-                return false;
-            }
-            if(validateCustomerIDfromBillFile(custID,billingMonth,entryDate))
-            {
-                break;
-            }
-            System.out.println("No Such Bill Found: Try Again");
+        if(custID.isEmpty() || custID.equals("Type Customer ID")){
+            JOptionPane.showMessageDialog(null,"No Such Bill Found","Error",JOptionPane.ERROR_MESSAGE);
+            return false;
         }
-
-        System.out.println("\n--------------------------------------------------\n\t\t\t  LESCO Billing Data\n--------------------------------------------------\n\n" +
-                "Customer ID:                 "+billList[0]+"\n"+
-                "Billing Month:               "+billList[1]+"\n"+
-                "Current Meter Reading:       "+billList[2]+" units\n"+
-                "Peak Meter Reading:          "+billList[3]+" units\n"+
-                "Reading Entry Date:          "+billList[4]+"\n"+
-                "Cost of Electricity:         Rs. "+billList[5]+"\n"+
-                "Sales Tax Amount:            Rs. "+billList[6]+"\n"+
-                "Fixed Charges:               Rs. "+billList[7]+"\n"+
-                "Total Billing Amount:        Rs. "+billList[8]+"\n"+
-                "Due Date:                    "+billList[9]+"\n"+
-                "Bill Paid Status:            "+billList[10]+"\n"+
-                "Bill Payment Date:           "+billList[11]+"\n");
+        else if(validateCustomerIDfromBillFile(custID,billingMonth,entryDate))
+        {}
+        else{
+            JOptionPane.showMessageDialog(null,"No Such Bill Found","Error",JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
         return true;
     }
 
-    public void viewReport()
+    public String[] getBillList(){
+        return billList;
+    }
+
+    public void viewReport(Emp_View_Report viewReport)
     {
         float sum_paid=0;
         float sum_unpaid=0;
@@ -531,7 +467,7 @@ public class Billing
             System.out.println("Error: " + e.getMessage());
         }
 
-        System.out.println("\n------------------------------\n\t    Status Report\n------------------------------\nAmount Paid So Far: " + sum_paid + "\nAmount Unpaid So Far: " + sum_unpaid);
+        viewReport.setValues(String.valueOf(sum_paid), String.valueOf(sum_unpaid));
     }
 
     public boolean isDigits(String str)
