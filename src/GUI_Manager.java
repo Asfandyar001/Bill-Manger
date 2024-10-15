@@ -3,7 +3,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Arrays;
+import java.util.ArrayList;
 
 public class GUI_Manager
 {
@@ -19,6 +19,8 @@ public class GUI_Manager
     private Emp_ExpiringCNIC expiringCNIC;
     private Emp_ViewBill_NoBill viewNoneBill;
     private Emp_Bill_Found foundBill;
+    private Emp_ViewNadraData nadraData;
+    private Emp_CustomerInfo custInfo;
 
     public GUI_Manager() {
         b = new Billing();
@@ -74,6 +76,8 @@ public class GUI_Manager
         expiringCNIC = new Emp_ExpiringCNIC(name);
         viewNoneBill = new Emp_ViewBill_NoBill(name);
         foundBill = new Emp_Bill_Found(name);
+        nadraData = new Emp_ViewNadraData(name);
+        custInfo = new Emp_CustomerInfo(name);
 
 
         f.replacePanel(old, updatePassword.getPanel());
@@ -284,6 +288,25 @@ public class GUI_Manager
         expiringCNIC.getViewBillButton().addActionListener(this::ActionPerformer);
         expiringCNIC.getChangeStatusButton().addActionListener(this::ActionPerformer);
         expiringCNIC.gettaxesButton().addActionListener(this::ActionPerformer);
+        expiringCNIC.getViewAllButton().addActionListener(e->{
+            nadraData.refreshPanel(obj_c.viewAllCnic());
+            f.replacePanel(oldPanel,nadraData.getPanel());
+            oldPanel = nadraData.getPanel();
+        });
+
+
+        nadraData.getLogoutButton().addActionListener(this::ActionPerformer);
+        nadraData.getCustomerInfoButton().addActionListener(this::ActionPerformer);
+        nadraData.getBillInfoButton().addActionListener(this::ActionPerformer);
+        nadraData.getUpdatePasswordButton().addActionListener(this::ActionPerformer);
+        nadraData.getViewReportButton().addActionListener(this::ActionPerformer);
+        nadraData.getViewBillButton().addActionListener(this::ActionPerformer);
+        nadraData.getChangeStatusButton().addActionListener(this::ActionPerformer);
+        nadraData.gettaxesButton().addActionListener(this::ActionPerformer);
+        nadraData.getBackButton().addActionListener(this::ActionPerformer);
+        nadraData.getSearchButton().addActionListener(e->{
+            nadraData.refreshPanel(obj_c.viewSearchCNIC(nadraData.getSearched()));
+        });
 
         //---------------------View Bill Panel Settings-----------------------------------//
 
@@ -321,15 +344,25 @@ public class GUI_Manager
 
         //---------------------Customer Info Panel Settings-------------------------------//
 
+        custInfo.getUpdatePasswordButton().addActionListener(this::ActionPerformer);
+        custInfo.getLogoutButton().addActionListener(this::ActionPerformer);
+        custInfo.getBillInfoButton().addActionListener(this::ActionPerformer);
+        custInfo.getChangeStatusButton().addActionListener(this::ActionPerformer);
+        custInfo.gettaxesButton().addActionListener(this::ActionPerformer);
+        custInfo.getViewBillButton().addActionListener(this::ActionPerformer);
+        custInfo.getViewReportButton().addActionListener(this::ActionPerformer);
+        custInfo.getViewExpireButton().addActionListener(this::ActionPerformer);
+
+        custInfo.getSearchButton().addActionListener(e->{
+
+        });
+        custInfo.getAddButton().addActionListener(e->{
+            if(obj_c.addCustomer(custInfo.getCNIC(), custInfo.getName(), custInfo.getAddress(), custInfo.getPhone(), custInfo.getCType(), custInfo.getMType())){
+                custInfo.refreshPanel(obj_c.viewAllCustomers(),obj_c);
+            }
+        });
 
 
-//            if(input.equals("2"))
-//            {
-//                if(c.addCustomer())
-//                {
-//                    System.out.println("\nCustomer Added Successfully!");
-//                }
-//            }
 //            else if(input.equals("3"))
 //            {
 //                if(b.addNewBill())
@@ -341,40 +374,42 @@ public class GUI_Manager
 
     private void ActionPerformer(ActionEvent e)
     {
-        if (e.getSource() == updatePassword.getLogoutButton() || e.getSource() == changeStatus.getLogoutButton() || e.getSource() == viewReport.getLogoutButton() || e.getSource() == taxesInfo.getLogoutButton() || e.getSource() == expiringCNIC.getLogoutButton() || e.getSource() == viewNoneBill.getLogoutButton() || e.getSource() == foundBill.getLogoutButton())
+        if (e.getSource() == updatePassword.getLogoutButton() || e.getSource() == changeStatus.getLogoutButton() || e.getSource() == viewReport.getLogoutButton() || e.getSource() == taxesInfo.getLogoutButton() || e.getSource() == expiringCNIC.getLogoutButton() || e.getSource() == viewNoneBill.getLogoutButton() || e.getSource() == foundBill.getLogoutButton() || e.getSource() == nadraData.getLogoutButton() || e.getSource() == custInfo.getLogoutButton())
         {
             f.destroy();
             GUI_Manager g = new GUI_Manager();
         }
-        else if(e.getSource() == changeStatus.getUpdatePasswordButton() || e.getSource() == viewReport.getUpdatePasswordButton() || e.getSource() == taxesInfo.getUpdatePasswordButton() || e.getSource() == expiringCNIC.getUpdatePasswordButton() || e.getSource() == viewNoneBill.getUpdatePasswordButton() || e.getSource() == foundBill.getUpdatePasswordButton()){
+        else if(e.getSource() == changeStatus.getUpdatePasswordButton() || e.getSource() == viewReport.getUpdatePasswordButton() || e.getSource() == taxesInfo.getUpdatePasswordButton() || e.getSource() == expiringCNIC.getUpdatePasswordButton() || e.getSource() == viewNoneBill.getUpdatePasswordButton() || e.getSource() == foundBill.getUpdatePasswordButton() || e.getSource() == nadraData.getUpdatePasswordButton() || e.getSource() == custInfo.getUpdatePasswordButton()){
             f.replacePanel(oldPanel,updatePassword.getPanel());
             oldPanel=updatePassword.getPanel();
         }
-        else if(e.getSource() == updatePassword.getCustomerInfoButton() || e.getSource() == changeStatus.getCustomerInfoButton() || e.getSource() == viewReport.getCustomerInfoButton() || e.getSource() == taxesInfo.getCustomerInfoButton() || e.getSource() == expiringCNIC.getCustomerInfoButton() || e.getSource() == viewNoneBill.getCustomerInfoButton() || e.getSource() == foundBill.getCustomerInfoButton()){
-            JOptionPane.showMessageDialog(null,"Customer Info Button Pressed","Message",JOptionPane.INFORMATION_MESSAGE);
+        else if(e.getSource() == updatePassword.getCustomerInfoButton() || e.getSource() == changeStatus.getCustomerInfoButton() || e.getSource() == viewReport.getCustomerInfoButton() || e.getSource() == taxesInfo.getCustomerInfoButton() || e.getSource() == expiringCNIC.getCustomerInfoButton() || e.getSource() == viewNoneBill.getCustomerInfoButton() || e.getSource() == foundBill.getCustomerInfoButton() || e.getSource() == nadraData.getCustomerInfoButton()){
+            custInfo.setValues(obj_c.viewAllCustomers(), obj_c);
+            f.replacePanel(oldPanel,custInfo.getPanel());
+            oldPanel = custInfo.getPanel();
         }
-        else if(e.getSource() == updatePassword.getBillInfoButton() || e.getSource() == changeStatus.getBillInfoButton() || e.getSource() == viewReport.getBillInfoButton() || e.getSource() == taxesInfo.getBillInfoButton() || e.getSource() == expiringCNIC.getBillInfoButton() || e.getSource() == viewNoneBill.getBillInfoButton() || e.getSource() == foundBill.getBillInfoButton()){
+        else if(e.getSource() == updatePassword.getBillInfoButton() || e.getSource() == changeStatus.getBillInfoButton() || e.getSource() == viewReport.getBillInfoButton() || e.getSource() == taxesInfo.getBillInfoButton() || e.getSource() == expiringCNIC.getBillInfoButton() || e.getSource() == viewNoneBill.getBillInfoButton() || e.getSource() == foundBill.getBillInfoButton() || e.getSource() == nadraData.getBillInfoButton() || e.getSource() == custInfo.getBillInfoButton()){
             JOptionPane.showMessageDialog(null,"Bill Info Button Pressed","Message",JOptionPane.INFORMATION_MESSAGE);
         }
-        else if(e.getSource() == updatePassword.getChangeStatusButton() || e.getSource() == viewReport.getChangeStatusButton() || e.getSource() == taxesInfo.getChangeStatusButton() || e.getSource() == expiringCNIC.getChangeStatusButton() || e.getSource() == viewNoneBill.getChangeStatusButton() || e.getSource() == foundBill.getChangeStatusButton()){
+        else if(e.getSource() == updatePassword.getChangeStatusButton() || e.getSource() == viewReport.getChangeStatusButton() || e.getSource() == taxesInfo.getChangeStatusButton() || e.getSource() == expiringCNIC.getChangeStatusButton() || e.getSource() == viewNoneBill.getChangeStatusButton() || e.getSource() == foundBill.getChangeStatusButton() || e.getSource() == nadraData.getChangeStatusButton() || e.getSource() == custInfo.getChangeStatusButton()){
             f.replacePanel(oldPanel,changeStatus.getPanel());
             oldPanel=changeStatus.getPanel();
         }
-        else if(e.getSource() == updatePassword.gettaxesButton() || e.getSource() == changeStatus.gettaxesButton() || e.getSource() == viewReport.gettaxesButton() || e.getSource() == expiringCNIC.gettaxesButton() || e.getSource() == viewNoneBill.gettaxesButton() || e.getSource() == foundBill.gettaxesButton()){
+        else if(e.getSource() == updatePassword.gettaxesButton() || e.getSource() == changeStatus.gettaxesButton() || e.getSource() == viewReport.gettaxesButton() || e.getSource() == expiringCNIC.gettaxesButton() || e.getSource() == viewNoneBill.gettaxesButton() || e.getSource() == foundBill.gettaxesButton() || e.getSource() == nadraData.gettaxesButton() || e.getSource() == custInfo.gettaxesButton()){
             taxesInfo.setValues(t.getData());
             f.replacePanel(oldPanel,taxesInfo.getPanel());
             oldPanel = taxesInfo.getPanel();
         }
-        else if(e.getSource() == updatePassword.getViewBillButton() || e.getSource() == changeStatus.getViewBillButton() || e.getSource() == viewReport.getViewBillButton() || e.getSource() == taxesInfo.getViewBillButton() || e.getSource() == expiringCNIC.getViewBillButton()){
+        else if(e.getSource() == updatePassword.getViewBillButton() || e.getSource() == changeStatus.getViewBillButton() || e.getSource() == viewReport.getViewBillButton() || e.getSource() == taxesInfo.getViewBillButton() || e.getSource() == expiringCNIC.getViewBillButton() || e.getSource() == nadraData.getViewBillButton() || e.getSource() == custInfo.getViewBillButton()){
             f.replacePanel(oldPanel,viewNoneBill.getPanel());
             oldPanel = viewNoneBill.getPanel();
         }
-        else if(e.getSource() == updatePassword.getViewReportButton() || e.getSource() == changeStatus.getViewReportButton() || e.getSource() == taxesInfo.getViewReportButton() || e.getSource() == expiringCNIC.getViewReportButton() || e.getSource() == viewNoneBill.getViewReportButton() || e.getSource() == foundBill.getViewReportButton()){
+        else if(e.getSource() == updatePassword.getViewReportButton() || e.getSource() == changeStatus.getViewReportButton() || e.getSource() == taxesInfo.getViewReportButton() || e.getSource() == expiringCNIC.getViewReportButton() || e.getSource() == viewNoneBill.getViewReportButton() || e.getSource() == foundBill.getViewReportButton() || e.getSource() == nadraData.getViewReportButton() || e.getSource() == custInfo.getViewReportButton()){
             b.viewReport(viewReport);
             f.replacePanel(oldPanel,viewReport.getPanel());
             oldPanel = viewReport.getPanel();
         }
-        else if(e.getSource() == updatePassword.getViewExpireButton() || e.getSource() == changeStatus.getViewExpireButton() || e.getSource() == viewReport.getViewExpireButton() || e.getSource() == taxesInfo.getViewExpireButton() || e.getSource() == viewNoneBill.getViewExpireButton() || e.getSource() == foundBill.getViewExpireButton()){
+        else if(e.getSource() == updatePassword.getViewExpireButton() || e.getSource() == changeStatus.getViewExpireButton() || e.getSource() == viewReport.getViewExpireButton() || e.getSource() == taxesInfo.getViewExpireButton() || e.getSource() == viewNoneBill.getViewExpireButton() || e.getSource() == foundBill.getViewExpireButton() || e.getSource() == nadraData.getBackButton() || e.getSource() == custInfo.getViewExpireButton()){
             expiringCNIC.setValues(obj_c.viewExpireCnic());
             f.replacePanel(oldPanel,expiringCNIC.getPanel());
             oldPanel = expiringCNIC.getPanel();

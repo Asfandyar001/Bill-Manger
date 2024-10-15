@@ -129,114 +129,76 @@ public class Customer
         });
     }
 
-    public boolean addCustomer()
+    public boolean addCustomer(String cnic, String name, String address, String phone, String custType, String meterType)
     {
-        Scanner scanner = new Scanner(System.in);
-
-        String cnic;
-        String name;
-        String address;
-        String phone;
-        String custType;
-        String meterType;
         String RUC = "0";
-        String PHUC;
-
-        while(true) {
-            System.out.print("Enter CNIC: ");
-            cnic = scanner.nextLine();
+        String PHUC = "0";
 
             int count = cnic_count(cnic);
-
-            if(cnic.equals("00"))
+            if(count >=3)
             {
-                return false;
-            }
-            else if(count >=3)
-            {
-                System.out.println("Not Allowed! Maximum 3 meters allowed per CNIC");
+                JOptionPane.showMessageDialog(null,"Not Allowed! Maximum 3 meters allowed per CNIC","Error",JOptionPane.ERROR_MESSAGE);
                 return false;
             }
             else if(cnic.length()==13 && isDigits(cnic) && searchNadraFile(cnic))
             {
-                break;
             }
-            System.out.println("Invalid CNIC : Try Again");
-        }
-        while(true) {
-            System.out.print("Enter Name: ");
-            name = scanner.nextLine();
-
-            if(name.equals("00"))
-            {
+            else {
+                JOptionPane.showMessageDialog(null, "Invalid CNIC : Try Again", "Error", JOptionPane.ERROR_MESSAGE);
                 return false;
             }
-            else if(isAlphabets(name))
+
+
+            if(isAlphabets(name))
             {
-                break;
+
             }
-            System.out.println("Incorrect Name Input : Try Again");
-        }
-
-        System.out.print("Enter Address: ");
-        address = scanner.nextLine();
-        if(address.equals("00"))
-        {
-            return false;
-        }
-
-        while(true) {
-            System.out.print("Enter Phone Number: ");
-            phone = scanner.nextLine();
-
-            if(phone.equals("00"))
-            {
+            else{
+                JOptionPane.showMessageDialog(null, "Incorrect Name Input : Try Again", "Error", JOptionPane.ERROR_MESSAGE);
                 return false;
             }
-            else if(phone.length()==11 && isDigits(phone))
-            {
-                break;
-            }
-            System.out.println("Incorrect Phone Number : Try Again");
-        }
 
-        while(true) {
-            System.out.print("Customer Type (Commercial -> C / Domestic -> D): ");
-            custType = scanner.nextLine();
+            if(phone.length()==11 && isDigits(phone))
+            {
+
+            }
+            else{
+                JOptionPane.showMessageDialog(null, "Incorrect Phone Number : Try Again", "Error", JOptionPane.ERROR_MESSAGE);
+                return false;
+            }
+
 
             if(custType.equals("00"))
             {
                 return false;
             }
-            else if(custType.equals("C") || custType.equals("c") || custType.equals("d") ||custType.equals("D"))
+            else if(custType.equals("Commercial"))
             {
-                break;
+                custType = "C";
             }
-            System.out.println("Incorrect Type : Try Again");
-        }
-
-        while(true) {
-            System.out.print("Enter Meter Type (Single -> S / Three -> T): ");
-            meterType = scanner.nextLine();
-
-            if(meterType.equals("00"))
-            {
+            else if(custType.equals("Domestic")){
+                custType = "D";
+            }
+            else{
+                JOptionPane.showMessageDialog(null, "Incorrect Type : Try Again", "Error", JOptionPane.ERROR_MESSAGE);
                 return false;
             }
-            else if(meterType.equals("S") || meterType.equals("s") || meterType.equals("t") || meterType.equals("T"))
-            {
-                if(meterType.equals("S") || meterType.equals("s"))
-                {
-                    PHUC = "not_supported";
-                }
-                else
-                {
-                    PHUC = "0";
-                }
-                break;
-            }
-            System.out.println("Incorrect Meter Type : Try Again");
+
+
+        if(meterType.equals("1-Phase"))
+        {
+            meterType = "S";
+            PHUC = "not_supported";
         }
+        else if(meterType.equals("3-Phase"))
+        {
+            meterType = "T";
+        }
+        else {
+            JOptionPane.showMessageDialog(null, "Incorrect Meter Type : Try Again", "Error", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
         LocalDate currentDate = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         String date = currentDate.format(formatter);
@@ -394,6 +356,61 @@ public class Customer
                 {
                     list.add(data[0] + "," + data[2]);
                 }
+            }
+        }catch(IOException e){
+            System.out.println("Error: " + e.getMessage());
+        }
+        return list;
+    }
+
+    public ArrayList<String> viewAllCnic()
+    {
+        ArrayList<String> list = new ArrayList<>();
+        String line;
+        String[] data;
+        try(BufferedReader br = new BufferedReader(new FileReader("NADRADBfile.txt"))){
+            while((line=br.readLine())!=null){
+                data = line.split(",");
+                list.add(data[0] + "," + data[1] + "," + data[2]);
+            }
+        }catch(IOException e){
+            System.out.println("Error: " + e.getMessage());
+        }
+        return list;
+    }
+
+
+    public ArrayList<String> viewSearchCNIC(String search)
+    {
+        ArrayList<String> list = new ArrayList<>();
+
+        String line;
+        String[] data;
+        try(BufferedReader br = new BufferedReader(new FileReader("NADRADBfile.txt"))){
+            while((line=br.readLine())!=null){
+                data = line.split(",");
+
+                if(search.equals("Search") || search.isEmpty()){
+                    list.add(data[0] + "," + data[1] + "," + data[2]);
+                }
+                else if(data[0].equals(search) || data[1].equals(search) || data[2].equals(search) )
+                {
+                    list.add(data[0] + "," + data[1] + "," + data[2]);
+                }
+            }
+        }catch(IOException e){
+            System.out.println("Error: " + e.getMessage());
+        }
+        return list;
+    }
+
+    public ArrayList<String> viewAllCustomers()
+    {
+        ArrayList<String> list = new ArrayList<>();
+        String line;
+        try(BufferedReader br = new BufferedReader(new FileReader("CustomerInfo.txt"))){
+            while((line=br.readLine())!=null){
+                list.add(line);
             }
         }catch(IOException e){
             System.out.println("Error: " + e.getMessage());

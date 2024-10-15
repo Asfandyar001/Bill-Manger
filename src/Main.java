@@ -36,7 +36,7 @@ public class Main
 //        frame.getContentPane().setBackground(Color.BLACK);
 //
 //
-//        Emp_ViewBill_NoBill update = new Emp_ViewBill_NoBill("Asfandyar");
+//        Emp_CustomerInfo update = new Emp_CustomerInfo("Asfandyar");
 //        frame.add(update);
 //
 //        frame.setVisible(true);

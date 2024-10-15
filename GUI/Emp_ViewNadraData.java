@@ -1,7 +1,8 @@
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -9,12 +10,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class Emp_ExpiringCNIC extends JPanel{
+public class Emp_ViewNadraData extends JPanel{
     private BufferedImage image;
     private JButton logoutButton;
-    private JButton viewAllButton;
+    private JButton backButton;
+    private JButton searchButton;
     private JLabel name1 = new JLabel();
     private JLabel name2 = new JLabel();
+
+    private JTextField textField1 = new JTextField("Search");
 
     private JButton updatePassword;
     private JButton customerInfo;
@@ -24,12 +28,15 @@ public class Emp_ExpiringCNIC extends JPanel{
     private JButton viewBill;
     private JButton taxesInfo;
 
-    public Emp_ExpiringCNIC(String name)
+    private JScrollPane scroll;
+
+    public Emp_ViewNadraData(String name)
     {
         setLayout(null);
         setNames(name);
         setImage();
         setButtons();
+        setFields();
         setSideMenuButtons();
 
         addMouseListener(new MouseAdapter() {
@@ -60,7 +67,7 @@ public class Emp_ExpiringCNIC extends JPanel{
 
     private void setImage() {
         try {
-            image = ImageIO.read(new File("Images/ExpiringCNIC.png"));
+            image = ImageIO.read(new File("Images/ViewNadra.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -83,6 +90,30 @@ public class Emp_ExpiringCNIC extends JPanel{
         }
     }
 
+    private void setFields()
+    {
+        textField1.setFont(new Font("Inter",Font.BOLD,15));
+        textField1.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (textField1.getText().equals("Search")) {
+                    textField1.setText("");
+                }
+            }
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (textField1.getText().isEmpty()) {
+                    textField1.setText("Search");
+                }
+            }
+        });
+        textField1.setBorder(BorderFactory.createEmptyBorder());
+        textField1.setBounds(623, 198,328,18);
+        textField1.setForeground(new Color(173,173,173));
+
+        add(textField1);
+    }
+
     private void setButtons()
     {
         logoutButton = new JButton();
@@ -91,14 +122,21 @@ public class Emp_ExpiringCNIC extends JPanel{
         logoutButton.setContentAreaFilled(false);
         logoutButton.setOpaque(false);
 
-        viewAllButton = new JButton();
-        viewAllButton.setBounds(1172, 193, 90, 27);
-        viewAllButton.setBorderPainted(false);
-        viewAllButton.setContentAreaFilled(false);
-        viewAllButton.setOpaque(false);
+        backButton = new JButton();
+        backButton.setBounds(1172, 191, 90, 27);
+        backButton.setBorderPainted(false);
+        backButton.setContentAreaFilled(false);
+        backButton.setOpaque(false);
+
+        searchButton = new JButton();
+        searchButton.setBounds(953, 200, 15, 15);
+        searchButton.setBorderPainted(false);
+        searchButton.setContentAreaFilled(false);
+        searchButton.setOpaque(false);
 
         add(logoutButton);
-        add(viewAllButton);
+        add(backButton);
+        add(searchButton);
     }
 
     private void setSideMenuButtons(){
@@ -154,15 +192,8 @@ public class Emp_ExpiringCNIC extends JPanel{
         add(taxesInfo);
     }
 
-    public void setValues(ArrayList<String> list){
-        JLabel total = new JLabel();
-        total.setText(String.valueOf(list.size()));
-        total.setFont(new Font("Inter",Font.BOLD,24));
-        total.setForeground(new Color(9,95,197));
-        total.setBounds(558, 198,83,23);
-        add(total);
-
-
+    public void setValues(ArrayList<String> list)
+    {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
         panel.setBackground(Color.white);
@@ -198,10 +229,19 @@ public class Emp_ExpiringCNIC extends JPanel{
             cnic.setBorder(null);
             label.add(cnic);
 
-            JLabel expireDate = new JLabel(data[1]);
+            JLabel issueDate = new JLabel(data[1]);
+            issueDate.setFont(new Font("Yu Gothic UI SemiBold",Font.BOLD,18));
+            issueDate.setForeground(new Color(93,93,93));
+            issueDate.setBounds(265, 8, 327, 22);
+            issueDate.setVerticalAlignment(JLabel.CENTER);
+            issueDate.setHorizontalAlignment(JLabel.CENTER);
+            issueDate.setBorder(null);
+            label.add(issueDate);
+
+            JLabel expireDate = new JLabel(data[2]);
             expireDate.setFont(new Font("Yu Gothic UI SemiBold",Font.BOLD,18));
             expireDate.setForeground(new Color(93,93,93));
-            expireDate.setBounds(590, 8, 332, 22);
+            expireDate.setBounds(592, 8, 332, 22);
             expireDate.setVerticalAlignment(JLabel.CENTER);
             expireDate.setHorizontalAlignment(JLabel.CENTER);
             expireDate.setBorder(null);
@@ -210,7 +250,7 @@ public class Emp_ExpiringCNIC extends JPanel{
             panel.add(label);
         }
 
-        JScrollPane scroll = new JScrollPane(panel);
+        scroll = new JScrollPane(panel);
         scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
         scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scroll.setPreferredSize(new Dimension(924, 431));
@@ -220,8 +260,24 @@ public class Emp_ExpiringCNIC extends JPanel{
         add(scroll);
     }
 
-    public JButton getViewAllButton(){
-        return viewAllButton;
+    public void refreshPanel(ArrayList<String> newList) {
+        if (scroll != null) {
+            remove(scroll);
+        }
+        setValues(newList);
+        revalidate();
+        repaint();
+    }
+
+
+    public String getSearched(){
+        return textField1.getText();
+    }
+    public JButton getBackButton(){
+        return backButton;
+    }
+    public JButton getSearchButton(){
+        return searchButton;
     }
     public JButton getLogoutButton()
     {
