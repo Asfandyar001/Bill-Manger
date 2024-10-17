@@ -8,10 +8,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class Emp_CustomerInfo extends JPanel{
+    JFrame refreshFrame;
+
     private BufferedImage image;
     private JButton logoutButton;
     private JButton searchButton;
     private JButton addButton;
+    private JButton refreshButton;
     private JLabel name1 = new JLabel();
     private JLabel name2 = new JLabel();
 
@@ -113,7 +116,7 @@ public class Emp_CustomerInfo extends JPanel{
             }
         });
         textField1.setBorder(BorderFactory.createEmptyBorder());
-        textField1.setBounds(623, 197,328,22);
+        textField1.setBounds(623, 196,328,22);
         textField1.setForeground(new Color(173,173,173));
 
         textField2.setFont(new Font("Inter",Font.BOLD,15));
@@ -132,7 +135,7 @@ public class Emp_CustomerInfo extends JPanel{
             }
         });
         textField2.setBorder(BorderFactory.createEmptyBorder());
-        textField2.setBounds(337, 133,138,22);
+        textField2.setBounds(337, 132,138,22);
         textField2.setForeground(new Color(173,173,173));
 
         textField3.setFont(new Font("Inter",Font.BOLD,15));
@@ -151,7 +154,7 @@ public class Emp_CustomerInfo extends JPanel{
             }
         });
         textField3.setBorder(BorderFactory.createEmptyBorder());
-        textField3.setBounds(522, 133,138,22);
+        textField3.setBounds(522, 132,138,22);
         textField3.setForeground(new Color(173,173,173));
 
         textField4.setFont(new Font("Inter",Font.BOLD,15));
@@ -170,7 +173,7 @@ public class Emp_CustomerInfo extends JPanel{
             }
         });
         textField4.setBorder(BorderFactory.createEmptyBorder());
-        textField4.setBounds(707, 133,138,22);
+        textField4.setBounds(707, 132,138,22);
         textField4.setForeground(new Color(173,173,173));
 
         textField5.setFont(new Font("Inter",Font.BOLD,15));
@@ -189,7 +192,7 @@ public class Emp_CustomerInfo extends JPanel{
             }
         });
         textField5.setBorder(BorderFactory.createEmptyBorder());
-        textField5.setBounds(892, 133,138,22);
+        textField5.setBounds(892, 132,138,22);
         textField5.setForeground(new Color(173,173,173));
 
         add(textField1);
@@ -218,6 +221,12 @@ public class Emp_CustomerInfo extends JPanel{
         addButton.setBorderPainted(false);
         addButton.setContentAreaFilled(false);
         addButton.setOpaque(false);
+
+        refreshButton = new JButton();
+        refreshButton.setBounds(231, 116, 53, 21);
+        refreshButton.setBorderPainted(false);
+        refreshButton.setContentAreaFilled(false);
+        refreshButton.setOpaque(false);
 
         add(logoutButton);
         add(searchButton);
@@ -447,6 +456,14 @@ public class Emp_CustomerInfo extends JPanel{
                         address.setEditable(true);
                         phone.setFocusable(true);
                         phone.setEditable(true);
+                        cType.setFocusable(true);
+                        cType.setEditable(true);
+                        mType.setFocusable(true);
+                        mType.setEditable(true);
+                        ruc.setFocusable(true);
+                        ruc.setEditable(true);
+                        phuc.setFocusable(true);
+                        phuc.setEditable(true);
                     } else {
                         name.setFocusable(false);
                         name.setEditable(false);
@@ -454,8 +471,25 @@ public class Emp_CustomerInfo extends JPanel{
                         address.setEditable(false);
                         phone.setFocusable(false);
                         phone.setEditable(false);
+                        cType.setFocusable(false);
+                        cType.setEditable(false);
+                        mType.setFocusable(false);
+                        mType.setEditable(false);
+                        ruc.setFocusable(false);
+                        ruc.setEditable(false);
+                        phuc.setFocusable(false);
+                        phuc.setEditable(false);
                         edit.setText("<html><u>Edit</u></html>");
-//                        t.updateTaxMenu(1,taxesInfo);
+
+                        String line = id.getText()+","+cnic.getText()+","+name.getText()+","+address.getText()+","+phone.getText()+","+cType.getText()+","+mType.getText()+","+conDate.getText()+","+ruc.getText()+","+phuc.getText();
+                        if(!obj_c.isVlaidEdit(line)){
+                            showRefreshWindow("Images/Refreshequired2.png");
+                        }
+                        else
+                        {
+                            obj_c.editCustomer(line);
+                            showRefreshWindow("Images/Refreshequired.png");
+                        }
                     }
                 }
                 @Override
@@ -472,10 +506,10 @@ public class Emp_CustomerInfo extends JPanel{
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     int result = JOptionPane.showConfirmDialog(null,"Delete ID: "+ id.getText() +"\nDo you want to proceed?", "Confirmation", JOptionPane.YES_NO_OPTION);
-                    if (result == JOptionPane.YES_OPTION) {
-                        System.out.println("Yes selected");
-                    } else if (result == JOptionPane.NO_OPTION) {
-                        System.out.println("No selected");
+                    if (result == JOptionPane.YES_OPTION)
+                    {
+                        obj_c.deleteCustomer(id.getText());
+                        showRefreshWindow("Images/Refreshequired.png");
                     }
                 }
                 @Override
@@ -570,7 +604,53 @@ public class Emp_CustomerInfo extends JPanel{
         add(box1);
         add(box2);
     }
+    private void showRefreshWindow(String link) {
+        refreshFrame = new JFrame();
+        refreshFrame.setSize(300, 150);
+        refreshFrame.setLocationRelativeTo(this);
+        refreshFrame.setResizable(false);
+        refreshFrame.setUndecorated(true);
 
+        JPanel mainPanel = new JPanel();
+        mainPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
+        mainPanel.setLayout(new BorderLayout());
+
+        JPanel panel = new JPanel() {
+            private Image image;
+            {
+                try {
+                    image = ImageIO.read(new File(link));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                if (image != null) {
+                    Graphics2D g2d = (Graphics2D) g;
+
+                    g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+                    g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+                    g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                    int imgWidth = getWidth();
+                    int imgHeight = getHeight();
+                    g2d.drawImage(image, 0, 0, imgWidth, imgHeight, this);
+                }
+            }
+        };
+
+        panel.setLayout(null);
+        panel.setPreferredSize(new Dimension(300, 150));
+        panel.setBounds(0, 0, 300, 150);
+
+        mainPanel.add(panel, BorderLayout.CENTER);
+        panel.add(refreshButton);
+        refreshFrame.add(mainPanel);
+        refreshFrame.setVisible(true);
+    }
 
     public String getSearched(){
         return textField1.getText();
@@ -603,6 +683,10 @@ public class Emp_CustomerInfo extends JPanel{
     public JButton getLogoutButton() {
         return logoutButton;
     }
+    public JButton getRefreshButton() {
+        return refreshButton;
+    }
+    public JFrame getRefreshFrame(){return refreshFrame;}
 
     public JButton getViewExpireButton(){return viewExpiringCNIC;}
     public JButton getBillInfoButton(){return billInfo;}

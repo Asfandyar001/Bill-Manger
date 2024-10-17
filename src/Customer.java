@@ -1,10 +1,12 @@
 import javax.swing.*;
 import java.io.*;
+import java.nio.Buffer;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -168,11 +170,7 @@ public class Customer
             }
 
 
-            if(custType.equals("00"))
-            {
-                return false;
-            }
-            else if(custType.equals("Commercial"))
+            if(custType.equals("Commercial"))
             {
                 custType = "C";
             }
@@ -379,7 +377,6 @@ public class Customer
         return list;
     }
 
-
     public ArrayList<String> viewSearchCNIC(String search)
     {
         ArrayList<String> list = new ArrayList<>();
@@ -416,6 +413,145 @@ public class Customer
             System.out.println("Error: " + e.getMessage());
         }
         return list;
+    }
+    public ArrayList<String> viewSearchCustomer(String search){
+        ArrayList<String> list = new ArrayList<>();
+
+        if(search.equals("Domestic")){
+            search = "D";
+        }
+        else if(search.equals("Commercial")){
+            search = "C";
+        }
+        else if(search.equals("1-Phase")){
+            search = "S";
+        }
+        else if(search.equals("3-Phase")){
+            search = "T";
+        }
+        String line;
+        try(BufferedReader br = new BufferedReader(new FileReader("CustomerInfo.txt"))){
+            while((line=br.readLine())!=null){
+                String[] data = line.split(",");
+                if(data[0].equals(search) || data[1].equals(search) || data[2].equals(search) || data[3].equals(search) || data[4].equals(search) || data[5].equals(search) || data[6].equals(search) || data[7].equals(search) || data[8].equals(search))
+                {
+                    list.add(line);
+                }
+                else if(search.isEmpty() || search.equals("Search")){
+                    list.add(line);
+                }
+            }
+        }catch(IOException e){
+            System.out.println("Error: " + e.getMessage());
+        }
+        return list;
+    }
+    public void deleteCustomer(String id){
+        ArrayList<String> list = new ArrayList<>();
+
+        try(BufferedReader br = new BufferedReader(new FileReader(custFilename))){
+            String line;
+            while((line = br.readLine())!=null){
+                String[] data = line.split(",");
+                if(!data[0].equals(id)){
+                    list.add(line);
+                }
+            }
+        }catch (IOException e){
+            System.out.println("Reader: " + e.getMessage() );
+        }
+
+        try(BufferedWriter bw = new BufferedWriter(new FileWriter(custFilename))) {
+            for(int i=0; i< list.size(); i++)
+            {
+                bw.write(list.get(i));
+                bw.newLine();
+            }
+        }
+        catch(IOException e)
+        {
+            System.out.println("Error while writing to File: " + e.getMessage());
+        }
+    }
+    public boolean isVlaidEdit(String str){
+        String[] data = str.split(",");
+
+        if(!isAlphabets(data[2]) || !isDigits(data[4]) || data[4].length()!=11){
+            return false;
+        }
+
+        if (!data[5].equals("Commercial") && !data[5].equals("Domestic")) {
+            return false;
+        }
+
+        if(data[6].equals("1-Phase") || data[6].equals("3-Phase")){
+
+        }
+        else{
+            return false;
+        }
+
+        if(!isDigits(data[8])){
+            return false;
+        }
+
+        if (data[6].equals("3-Phase") && !data[9].trim().isEmpty() && !isDigits(data[9].trim())) {
+            return false;
+        }
+
+        return true;
+    }
+    public void editCustomer(String editedString){
+
+        String[] data = editedString.split(",");
+
+        ArrayList<String> list = new ArrayList<>();
+        try(BufferedReader br = new BufferedReader(new FileReader(custFilename))){
+            String line;
+            while((line=br.readLine())!=null){
+                String[] data2 = line.split(",");
+                if(data2[0].equals(data[0])){
+                    if(data[5].equals("Commercial")){
+                        data[5]="C";
+                    }
+                    else if(data[5].equals("Domestic")){
+                        data[5] = "D";
+                    }
+
+                    if(data[6].equals("1-Phase")){
+                        data[6] = "S";
+                    }
+                    else if(data[6].equals("3-Phase")){
+                        data[6] = "T";
+                    }
+
+                    if (data[6].equals("T") && (data[9] == null || data[9].trim().isEmpty())) {
+                        data[9] = "0";
+                    }
+
+                    if(data[6].equals("S")){
+                        data[9] = "not_supported";
+                    }
+
+                    String fix = data[0] + "," + data[1] + "," + data[2] + "," + data[3] + "," + data[4] + "," + data[5] + "," + data[6] + "," + data[7] + "," + data[8] + "," + data[9];
+                    list.add(fix);
+                }
+                else{
+                    list.add(line);
+                }
+            }
+        }catch(IOException e){
+            System.out.println(e.getMessage());
+        }
+
+        try(BufferedWriter bw = new BufferedWriter(new FileWriter(custFilename))){
+            for(int i=0;i< list.size(); i++){
+                bw.write(list.get(i));
+                bw.newLine();
+            }
+        }catch(IOException e){
+            System.out.println(e.getMessage());
+        }
     }
 
     public int cnic_count(String cnic)

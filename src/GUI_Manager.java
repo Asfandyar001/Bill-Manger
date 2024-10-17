@@ -3,7 +3,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 
 public class GUI_Manager
 {
@@ -354,22 +353,20 @@ public class GUI_Manager
         custInfo.getViewExpireButton().addActionListener(this::ActionPerformer);
 
         custInfo.getSearchButton().addActionListener(e->{
-
+            custInfo.refreshPanel(obj_c.viewSearchCustomer(custInfo.getSearched()),obj_c);
         });
         custInfo.getAddButton().addActionListener(e->{
-            if(obj_c.addCustomer(custInfo.getCNIC(), custInfo.getName(), custInfo.getAddress(), custInfo.getPhone(), custInfo.getCType(), custInfo.getMType())){
-                custInfo.refreshPanel(obj_c.viewAllCustomers(),obj_c);
-            }
+            obj_c.addCustomer(custInfo.getCNIC(), custInfo.getName(), custInfo.getAddress(), custInfo.getPhone(), custInfo.getCType(), custInfo.getMType());
+            custInfo.refreshPanel(obj_c.viewAllCustomers(),obj_c);
+        });
+        custInfo.getRefreshButton().addActionListener(e->{
+            custInfo.getRefreshFrame().dispose();
+            custInfo.refreshPanel(obj_c.viewAllCustomers(),obj_c);
         });
 
+        //---------------------Bill Info Panel Settings-------------------------------//
 
-//            else if(input.equals("3"))
-//            {
-//                if(b.addNewBill())
-//                {
-//                    System.out.println("\nBill Added Successfully!");
-//                }
-//            }
+
     }
 
     private void ActionPerformer(ActionEvent e)
